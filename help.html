@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cómo usar Nota de Técnica</title>
+<style>
+:root{--bg:#eef2ee;--panel:#fff;--line:#c9d4cc;--ink:#14201c;--mute:#4f6158;--acc:#0f6b4a;--accInk:#fff;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a16;--panel:#18251f;--line:#2b3d35;--ink:#e6efe9;--mute:#9db0a5;--acc:#ffd23f;--accInk:#14201c;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 64px}
+h1{font-size:2rem;line-height:1.25;margin:8px 0 8px;letter-spacing:-.01em}
+h2{font-size:1.35rem;line-height:1.3;margin:2.4rem 0 .6rem}
+h3{font-size:1.05rem;margin:1.4rem 0 .2rem}
+p{margin:.4rem 0}
+.lead{color:var(--mute);font-size:1.05rem;max-width:60ch}
+.btn{display:inline-flex;align-items:center;min-height:44px;padding:0 1.1rem;border-radius:8px;background:var(--acc);color:var(--accInk);font-weight:600;text-decoration:none;margin-top:.8rem}
+.btn:focus-visible,a:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+a{color:var(--acc)}
+.shot{display:block;width:100%;max-width:420px;height:auto;margin:1.4rem auto .2rem;border-radius:12px;border:1px solid var(--line)}
+.cap{color:var(--mute);font-size:.9rem;margin:0 auto 1rem;max-width:420px}
+.gif{display:block;width:100%;max-width:300px;height:auto;margin:.8rem 0 .2rem;border-radius:12px;border:1px solid var(--line)}
+.gifcap{color:var(--mute);font-size:.9rem;margin:0}
+ol.steps{list-style:none;counter-reset:s;padding:0;margin:1rem 0}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 1.4rem 3.2rem}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:.05rem;width:2.2rem;height:2.2rem;border-radius:50%;background:var(--acc);color:var(--accInk);display:grid;place-items:center;font-weight:700}
+ol.steps h3{margin:0 0 .15rem}
+table{width:100%;border-collapse:collapse;margin:.6rem 0;font-size:.97rem}
+th,td{text-align:left;vertical-align:top;padding:.6rem .7rem;border-bottom:1px solid var(--line)}
+th{font-weight:600;width:34%}
+details{border-bottom:1px solid var(--line);padding:.7rem 0}
+summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center}
+summary:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+details p{margin:.2rem 0 .5rem;color:var(--mute)}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.9rem 1rem;margin:1.2rem 0}
+ul{padding-left:1.2rem}
+li{margin:.25rem 0}
+footer{margin-top:2.4rem;color:var(--mute);font-size:.92rem}
+</style>
+</head>
+<body>
+<main>
+<h1>Cómo usar Nota de Técnica</h1>
+<p class="lead">Revisa la técnica de béisbol con video. Avanza un clip fotograma a fotograma, dibuja líneas, mide ángulos y compara dos clips lado a lado. Tus videos se quedan en tu dispositivo.</p>
+<a class="btn" href="./">Abrir la app</a>
+
+<img class="shot" src="screenshot.jpg" width="1236" height="2238" alt="Nota de Técnica comparando dos clips de lanzamiento lado a lado, con el ángulo del codo medido en cada clip (110 grados y 87 grados), y los controles de dibujo y de fotogramas debajo.">
+<p class="cap">Los clips de ejemplo son ilustraciones, no jugadores reales.</p>
+
+<h2>Primeros pasos</h2>
+<ol class="steps">
+<li><h3>Elige un video</h3><p>Toca <b>Elegir video</b> y selecciona un clip de tu teléfono. Para comparar dos clips, toca primero <b>Comparar lado a lado</b> y luego elige un segundo video para B. Los videos horizontales y verticales se ajustan automáticamente.</p></li>
+<li><h3>Encuentra el momento</h3><p>Toca <b>Fotograma ▶</b> o <b>◀ Fotograma</b> para avanzar o retroceder un fotograma. Arrastra la barra para saltar a otro punto, o toca <b>Reproducir</b> y elige una velocidad de 0.1x a 1x. Con <b>Sincronizar A y B</b> activado, los dos videos se mueven juntos.</p><img class="gif" src="frame-step.gif" width="412" height="746" alt="Cada toque en Fotograma ▶ avanza los dos videos un fotograma y cambia el tiempo mostrado."><p class="gifcap">Cada toque en <b>Fotograma ▶</b> avanza un fotograma. Los jugadores son ilustraciones.</p></li>
+<li><h3>Dibuja y mide</h3><p>Elige una herramienta y dibuja sobre el video. Tus dibujos se quedan en pantalla mientras avanzas por los fotogramas, así puedes comprobar si una posición cambia.</p></li>
+<li><h3>Guarda una imagen</h3><p>Toca <b>Guardar imagen</b> para guardar una imagen fija con tus anotaciones. El nombre de la app y su enlace se añaden abajo, para que quien la reciba pueda encontrar la app. Mantén presionada la imagen para guardarla, o haz una captura de pantalla, y envíasela a tu entrenador.</p></li>
+</ol>
+
+<h2>Herramientas de dibujo</h2>
+<table>
+<tr><th>Línea</th><td>Arrastra de un punto a otro. Sirve para comprobar una recta, por ejemplo una línea vertical que pase por la cabeza.</td></tr>
+<tr><th>Ángulo (toca 3 puntos)</th><td>Toca tres puntos en orden. El ángulo se mide en el punto del medio y aparece sobre el video. Para el codo, toca hombro, codo y muñeca.</td></tr>
+<tr><th>Mano alzada</th><td>Arrastra para dibujar cualquier forma.</td></tr>
+<tr><th>Color</th><td>Cambia el color de la siguiente línea que dibujes.</td></tr>
+<tr><th>Deshacer</th><td>Quita el último punto o dibujo del video seleccionado.</td></tr>
+<tr><th>Borrar todo</th><td>Quita todos los dibujos del video seleccionado.</td></tr>
+</table>
+
+<h2>Ajustes de reproducción</h2>
+<table>
+<tr><th>Velocidad</th><td>0.1x, 0.25x, 0.5x o 1x. Con velocidades más lentas es más fácil ver los movimientos rápidos.</td></tr>
+<tr><th>fps</th><td>Ponlo igual que los fotogramas por segundo con los que grabaste (por ejemplo 30, 60 o 240). Define cuánto avanza <b>Fotograma</b>, así que un toque debe ser un fotograma de tu video.</td></tr>
+<tr><th>Comparar lado a lado</th><td>Muestra los videos A y B juntos. Toca <b>Una sola vista</b> para volver a un solo video.</td></tr>
+<tr><th>Sincronizar A y B</th><td>Si está activado, Reproducir, Fotograma y la barra controlan los dos videos. Desactívalo para mover solo un video.</td></tr>
+</table>
+
+<h2>Consejos para grabar</h2>
+<ul>
+<li>Apoya el teléfono en un trípode o en una superficie estable para que la imagen no tiemble.</li><li>Graba siempre desde el mismo lugar y con el mismo ángulo, para comparar los clips con facilidad.</li><li>Graba de lado para la técnica de lanzar y de bateo, con todo el cuerpo dentro del cuadro.</li><li>Usa 60 fps o más si tu teléfono lo permite. El modo de cámara lenta es aún mejor para swings y lanzamientos rápidos.</li><li>Con buena luz y un fondo sencillo, el cuerpo se ve mejor.</li>
+</ul>
+
+<h2>Preguntas</h2>
+<details><summary>¿Se suben mis videos a algún sitio?</summary><p>No. Los videos se abren y se procesan en tu dispositivo, dentro del navegador. Nota de Técnica no los envía a ningún servidor.</p></details><details><summary>¿Qué incluye la imagen guardada?</summary><p>El fotograma o los fotogramas que estabas viendo, con tus dibujos y ángulos. Abajo se añade una barra con el nombre de la app y su enlace.</p></details><details><summary>El video tarda mucho en cargar.</summary><p>Los archivos grandes, como clips largos en 4K, pueden tardar en abrirse. Prueba a grabar en 1080p o recorta el clip a la parte que necesitas.</p></details><details><summary>Fotograma no avanza de uno en uno.</summary><p>Revisa el ajuste de fps. Debe coincidir con los fotogramas por segundo con los que grabaste. Si es mayor que el real del video, cada toque avanza menos de un fotograma.</p></details><details><summary>Mi teléfono siempre abre la misma carpeta al elegir un video.</summary><p>El selector de archivos lo controla tu teléfono, no la app. Prueba la vista <b>Recientes</b> o <b>Videos</b> del selector para encontrar tus clips sin recorrer carpetas.</p></details><details><summary>¿Se quedan los dibujos en el video?</summary><p>Se quedan mientras la página está abierta. Si recargas la página o eliges otro video, se borran. Usa <b>Guardar imagen</b> para conservar una imagen.</p></details>
+
+<div class="note"><b>Una nota para entrenadores y padres.</b> Usa los números para comparar a un jugador con sus propios clips anteriores, no con otros jugadores. Sigue las pautas de tu liga sobre número de lanzamientos y descanso.</div>
+
+<p><a href="./">Volver a la app</a></p>
+<footer>Nota de Técnica es una herramienta gratuita. Las imágenes de ejemplo son ilustraciones.</footer>
+</main>
+</body>
+</html>

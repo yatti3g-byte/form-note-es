@@ -68,6 +68,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;min-height:44px}
   <button class="btn" id="cmp">Comparar lado a lado</button>
   <label class="chk" id="linkw" hidden><input type="checkbox" id="link" checked>Sincronizar A y B</label>
   <button class="btn" id="snap">Guardar imagen</button>
+  <a class="btn" href="help.html" target="_blank" rel="noopener" style="text-decoration:none">Cómo usar</a>
 </div>
 
 <div id="snapbox" hidden>
@@ -225,9 +226,25 @@ $('#snap').onclick=()=>{
   const o=document.createElement('canvas');o.width=Math.round(ws.reduce((a,b)=>a+b));o.height=h;
   const x=o.getContext('2d');let off=0;
   cs.forEach((c,k)=>{x.drawImage(c,off,0,ws[k],h);off+=ws[k]});
-  $('#snapimg').src=o.toDataURL('image/png');
+  $('#snapimg').src=withCredit(o).toDataURL('image/png');
   $('#snapbox').hidden=false;
 };
+const APP_NAME='Nota de Técnica';
+/* 保存画像の下に、アプリ名とリンクの帯を付ける（共有された画像からアプリへつなぐため） */
+function withCredit(o){
+  const bh=Math.round(Math.max(72,o.width*0.1)),c=document.createElement('canvas');
+  c.width=o.width;c.height=o.height+bh;
+  const x=c.getContext('2d');x.drawImage(o,0,0);
+  x.fillStyle='#14201c';x.fillRect(0,o.height,c.width,bh);
+  let u='';
+  if(/^https?:$/.test(location.protocol))u=(location.origin+location.pathname).replace(/index\.html$/,'').replace(/^https?:\/\//,'');
+  const pad=Math.round(bh*0.3),font='"Hiragino Sans","Noto Sans JP",system-ui,sans-serif';
+  x.textBaseline='middle';x.textAlign='left';
+  x.fillStyle='#ffffff';x.font='bold '+Math.round(bh*0.34)+'px '+font;
+  x.fillText(APP_NAME,pad,o.height+(u?bh*0.34:bh*0.5));
+  if(u){x.fillStyle='#ffd23f';x.font=Math.round(bh*0.26)+'px '+font;x.fillText(u,pad,o.height+bh*0.72)}
+  return c;
+}
 $('#snapclose').onclick=()=>$('#snapbox').hidden=true;
 /* Two-pane mode: auto-pick side-by-side or stacked from video aspect ratio and screen size */
 function layout(){
