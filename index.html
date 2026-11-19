@@ -3,13 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Nota de Técnica</title>
+<title>Form Note</title>
+<meta name="description" content="Una herramienta gratuita para revisar la técnica de béisbol en video: fotograma a fotograma, medición de ángulos y comparación de dos videos. Los videos se quedan en tu dispositivo.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Form Note">
+<meta property="og:description" content="Una herramienta gratuita para revisar la técnica de béisbol en video: fotograma a fotograma, medición de ángulos y comparación de dos videos. Los videos se quedan en tu dispositivo.">
+<meta property="og:url" content="https://yatti3g-byte.github.io/form-note-es/">
+<meta property="og:image" content="https://yatti3g-byte.github.io/form-note-es/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
 <style>
 :root{--bg:#eef2ee;--panel:#fff;--line:#c9d4cc;--ink:#14201c;--mute:#5b6d64;--acc:#0f6b4a;--accInk:#fff;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a16;--panel:#18251f;--line:#2b3d35;--ink:#e6efe9;--mute:#93a79c;--acc:#ffd23f;--accInk:#14201c;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#0f1a16;--panel:#18251f;--line:#2b3d35;--ink:#e6efe9;--mute:#93a79c;--acc:#ffd23f;--accInk:#14201c;color-scheme:dark}
-html,body{height:100%}
+html,body{height:100%;overscroll-behavior:none}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;gap:6px;padding:6px;box-sizing:border-box}
 .panes{display:grid;grid-template-columns:1fr;gap:6px;flex:1;min-height:0}
 .panes.two{grid-template-columns:1fr 1fr}
@@ -20,7 +30,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-app
 .bar b{width:1.6em;height:1.6em;display:grid;place-items:center;border-radius:50%;background:var(--line)}
 .pane.act .bar b{background:var(--acc);color:var(--accInk)}
 .name{color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.stage{position:relative;flex:1;min-height:0;background:#000;border-radius:8px;overflow:hidden}
+.stage{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;position:relative;flex:1;min-height:160px;background:#000;border-radius:8px;overflow:hidden}
 .pane.act .stage{outline:2px solid var(--acc);outline-offset:-2px}
 video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
@@ -47,7 +57,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;min-height:44px}
   <button class="btn" data-tool="pen">Mano alzada</button>
   <input type="color" id="col" value="#ffd23f" aria-label="Color de línea">
   <button class="btn" id="undo">Deshacer</button>
-  <button class="btn" id="clear">Borrar todo</button>
+  <button class="btn" id="clear">Borrar dibujos</button>
 </div>
 
 <div class="row">
@@ -65,16 +75,16 @@ label.chk{display:inline-flex;align-items:center;gap:6px;min-height:44px}
   <select id="fps" aria-label="Fotogramas por segundo">
     <option value="24">24fps</option><option value="30" selected>30fps</option><option value="60">60fps</option><option value="120">120fps</option><option value="240">240fps</option>
   </select>
-  <button class="btn" id="cmp">Comparar lado a lado</button>
+  <button class="btn" id="cmp">Comparar dos videos</button>
   <label class="chk" id="linkw" hidden><input type="checkbox" id="link" checked>Sincronizar A y B</label>
   <button class="btn" id="snap">Guardar imagen</button>
   <a class="btn" href="help.html" target="_blank" rel="noopener" style="text-decoration:none">Cómo usar</a>
 </div>
 
 <div id="snapbox" hidden>
-  <p>Mantén presionada la imagen para guardarla o haz una captura de pantalla. Compártela con tu entrenador o en redes sociales para revisar la técnica.</p>
+  <p>Mantén presionada la imagen para guardarla o haz una captura de pantalla. Compártela con tu entrenador o tus compañeros para revisar la técnica.</p>
   <img id="snapimg" alt="Imagen fija con anotaciones">
-  <button class="btn" id="snapclose">Cerrar</button>
+  <div class="row" style="justify-content:center"><button class="btn on" id="snapshare" hidden>Compartir</button><button class="btn" id="snapclose">Cerrar</button></div>
 </div>
 
 <script>
@@ -130,14 +140,25 @@ const panes=[0,1].map(i=>{
   p.x=p.c.getContext('2d');
   el.querySelector('input').onchange=e=>{
     const f=e.target.files[0];if(!f)return;
-    p.v.src=URL.createObjectURL(f);
+    if(p.url)URL.revokeObjectURL(p.url);
+    p.url=URL.createObjectURL(f);p.off=0;p.pts=null;p.first=true;
+    p.v.src=p.url;
     el.querySelector('.name').textContent=f.name;
     el.querySelector('.empty').hidden=true;
     p.shapes=[];p.pend=null;setActive(i);
   };
-  p.v.onloadedmetadata=()=>{layout();redraw(p);sync()};
+  const bad=()=>{const m=el.querySelector('.empty');m.innerHTML='No se puede reproducir este video.<br>Es posible que su formato no sea compatible con este dispositivo.';m.hidden=false};
+  p.v.onerror=()=>{if(p.v.getAttribute('src'))bad()};
+  p.v.onloadedmetadata=()=>{if(!p.v.videoWidth){bad();return}layout();redraw(p);sync()};
+  /* 表示中のコマの時刻(pts)を常に記録する。スライダーや再生停止のあと、任意の時刻から正確に1コマ動かすため */
+  p.pts=null;p.first=true;
+  p.wait=[];
+  const tick=(n,m)=>{p.pts=m.mediaTime;p.stale=false;if(p.first){p.off=m.mediaTime||0;p.first=false}p.wait.splice(0).forEach(f=>f());p.v.requestVideoFrameCallback(tick)};
+  /* シーク直後は、新しいコマの時刻が届くまで「未確定」。コマ送りが自分で指定した位置(tgt)への移動なら、待たずに進める */
+  p.v.addEventListener('seeking',()=>{p.stale=true;p.mid=Math.abs(p.v.currentTime-(p.tgt??-1))<1e-3});
+  if(p.v.requestVideoFrameCallback)p.v.requestVideoFrameCallback(tick);
   p.v.ontimeupdate=()=>{if(active===i)sync()};
-  p.v.onplay=p.v.onpause=()=>{if(active===i)$('#play').textContent=p.v.paused?'Reproducir':'Pausar'};
+  p.v.onplay=p.v.onpause=p.v.onended=playLabel;
   new ResizeObserver(()=>fit(p)).observe(p.c);
   el.addEventListener('pointerdown',()=>setActive(i),true);
   p.c.addEventListener('pointerdown',e=>{
@@ -159,16 +180,25 @@ const panes=[0,1].map(i=>{
     if(p.cur.t==='line')p.cur.p[1]=n;else p.cur.p.push(n);
     redraw(p);
   });
-  const end=()=>{if(p.cur){p.shapes.push(p.cur);p.cur=null;redraw(p)}};
+  /* ペインを切り替えるためのタップなどで、長さのない点・線が残らないようにする */
+  const tiny=s=>{const R=rect(p),xs=s.p.map(q=>q[0]*R.w),ys=s.p.map(q=>q[1]*R.h);
+    return s.p.length<2||Math.max(...xs)-Math.min(...xs)<4&&Math.max(...ys)-Math.min(...ys)<4};
+  const end=()=>{if(p.cur){if(!tiny(p.cur))p.shapes.push(p.cur);p.cur=null;redraw(p)}};
+  p.c.addEventListener('contextmenu',e=>e.preventDefault());
   p.c.addEventListener('pointerup',end);p.c.addEventListener('pointercancel',end);
   return p;
 });
 
 const fps=()=>+$('#fps').value;
 const T=()=>(compare&&$('#link').checked?panes:[panes[active]]).filter(p=>p.v.getAttribute('src'));
+/* 再生ボタンの表示は、いま「再生」を押したときの動作に合わせる(連動中は、終わった画面を除いた画面の状態で決める) */
+function playLabel(){
+  const ts=T(),live=ts.filter(p=>!p.v.ended),g=live.length&&live.length<ts.length?live:ts;
+  $('#play').textContent=g.length?(g.every(p=>p.v.paused)?'Reproducir':'Pausar'):(panes[active].v.paused?'Reproducir':'Pausar');
+}
 function setActive(i){
   active=i;panes.forEach(p=>p.el.classList.toggle('act',p.i===i));
-  $('#play').textContent=panes[i].v.paused?'Reproducir':'Pausar';sync();
+  playLabel();sync();
 }
 function sync(){
   const v=panes[active].v,d=v.duration;
@@ -177,30 +207,51 @@ function sync(){
   $('#time').textContent=v.currentTime.toFixed(2)+' / '+d.toFixed(2)+' s';
 }
 function step(dir){
+  /* コマの「真ん中」を狙ってシークする。n/fps ちょうどを指定すると、時刻の丸め誤差で前のコマに戻ることがあるため。
+     表示中のコマは、記録しておいたコマの時刻(pts)から正確に求める */
+  const f=fps();
   T().forEach(p=>{
-    p.v.pause();
-    p.v.currentTime=Math.min(p.v.duration||0,Math.max(0,p.v.currentTime+dir/fps()));
+    const v=p.v;v.pause();
+    const run=()=>{
+      const o=(p.off||0)%(1/f),last=Math.max(0,Math.round((v.duration||0)*f)-1);
+      const fresh=p.pts!=null&&!p.stale&&!v.seeking&&Math.abs(v.currentTime-p.pts)<=1/f+1e-3;
+      const cur=fresh?Math.round((p.pts-o)*f):Math.floor((v.currentTime-o)*f+0.25);
+      const n=Math.min(last,Math.max(0,Math.min(last,cur)+dir));
+      p.tgt=o+(n+0.5)/f;v.currentTime=p.tgt;
+    };
+    if(p.stale&&!p.mid&&v.requestVideoFrameCallback){
+      let done=false;const fin=ok=>{if(done)return;done=true;if(ok===false)p.stale=false;run()};
+      p.wait.push(()=>fin());setTimeout(()=>fin(false),150);
+    }else run();
   });
 }
 $('#prev').onclick=()=>step(-1);
 $('#next').onclick=()=>step(1);
 $('#play').onclick=()=>{
-  const ts=T();if(!ts.length)return;
+  let ts=T();if(!ts.length)return;
+  const live=ts.filter(p=>!p.v.ended);if(live.length&&live.length<ts.length)ts=live;
   const go=ts.every(p=>p.v.paused);
-  ts.forEach(p=>{p.v.playbackRate=+$('#speed').value;go?p.v.play():p.v.pause()});
+  ts.forEach(p=>{p.v.playbackRate=+$('#speed').value;if(go){const r=p.v.play();if(r&&r.catch)r.catch(()=>{})}else p.v.pause()});
 };
 $('#speed').onchange=()=>panes.forEach(p=>p.v.playbackRate=+$('#speed').value);
-$('#seek').oninput=e=>T().forEach(p=>{p.v.pause();p.v.currentTime=e.target.value/1000*(p.v.duration||0)});
+$('#seek').oninput=e=>{
+  /* 連動中は、操作した画面の移動量(秒)をもう一方にも同じだけ加える。A・Bの位置の差が保たれる */
+  const ts=T(),base=ts.includes(panes[active])?panes[active]:ts[0];if(!base)return;
+  const nt=e.target.value/1000*(base.v.duration||0),dt=nt-base.v.currentTime;
+  ts.forEach(p=>{p.v.pause();p.v.currentTime=p===base?nt:Math.min(p.v.duration||0,Math.max(0,p.v.currentTime+dt))});
+};
 $('#cmp').onclick=()=>{
   compare=!compare;
   panes[1].el.hidden=!compare;
   $('#panes').classList.toggle('two',compare);
   $('#linkw').hidden=!compare;
   $('#cmp').classList.toggle('on',compare);
-  $('#cmp').textContent=compare?'Una sola vista':'Comparar lado a lado';
+  if(!compare&&active===1)setActive(0);
+  $('#cmp').textContent=compare?'Una sola vista':'Comparar dos videos';
   layout();
 };
 panes[1].el.hidden=true;
+$('#link').addEventListener('change',playLabel);$('#cmp').addEventListener('click',playLabel);
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{
   tool=b.dataset.tool;
   document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('on',x===b));
@@ -226,25 +277,150 @@ $('#snap').onclick=()=>{
   const o=document.createElement('canvas');o.width=Math.round(ws.reduce((a,b)=>a+b));o.height=h;
   const x=o.getContext('2d');let off=0;
   cs.forEach((c,k)=>{x.drawImage(c,off,0,ws[k],h);off+=ws[k]});
-  $('#snapimg').src=withCredit(o).toDataURL('image/png');
+  const cc=withCredit(o);$('#snapimg').src=cc.toDataURL('image/png');prepShare(cc);
   $('#snapbox').hidden=false;
 };
-const APP_NAME='Nota de Técnica';
+const APP_HINT='Escanea el código QR para abrir la app';
+const APP_NAME='Form Note';
 /* 保存画像の下に、アプリ名とリンクの帯を付ける（共有された画像からアプリへつなぐため） */
+/* QRコード生成（外部ライブラリなし）。バイトモード・誤り訂正L・バージョン1〜4（URL 78文字まで）。収まらない場合は null */
+function qrMatrix(text){
+  const data=Array.from(new TextEncoder().encode(text));
+  const CAP={1:[19,7],2:[34,10],3:[55,15],4:[80,20]};
+  let ver=0;
+  for(const v of [1,2,3,4]){if(data.length<=CAP[v][0]-2){ver=v;break}}
+  if(!ver)return null;
+  const dcw=CAP[ver][0],ecn=CAP[ver][1],bits=[];
+  const put=(v,n)=>{for(let i=n-1;i>=0;i--)bits.push((v>>i)&1)};
+  put(4,4);put(data.length,8);data.forEach(b=>put(b,8));
+  put(0,Math.min(4,dcw*8-bits.length));
+  while(bits.length%8)bits.push(0);
+  for(let p=0;bits.length<dcw*8;p++)put(p%2?0x11:0xEC,8);
+  const cw=[];
+  for(let i=0;i<bits.length;i+=8){let b=0;for(let j=0;j<8;j++)b=(b<<1)|bits[i+j];cw.push(b)}
+  const exp=new Array(512),log=new Array(256);
+  let xv=1;
+  for(let i=0;i<255;i++){exp[i]=xv;log[xv]=i;xv<<=1;if(xv&256)xv^=0x11D}
+  for(let i=255;i<512;i++)exp[i]=exp[i-255];
+  const mul=(a,b)=>a&&b?exp[log[a]+log[b]]:0;
+  let g=[1];
+  for(let i=0;i<ecn;i++){const ng=new Array(g.length+1).fill(0);for(let j=0;j<g.length;j++){ng[j]^=g[j];ng[j+1]^=mul(g[j],exp[i])}g=ng}
+  const ec=new Array(ecn).fill(0);
+  for(const d of cw){const f=d^ec[0];ec.shift();ec.push(0);for(let j=0;j<ecn;j++)ec[j]^=mul(g[j+1],f)}
+  const all=cw.concat(ec);
+  const N=17+4*ver,M=[],F=[];
+  for(let i=0;i<N;i++){M.push(new Array(N).fill(false));F.push(new Array(N).fill(false))}
+  const set=(r,c,v)=>{M[r][c]=v;F[r][c]=true};
+  const finder=(r,c)=>{for(let i=-1;i<=7;i++)for(let j=-1;j<=7;j++){
+    const rr=r+i,cc=c+j;if(rr<0||cc<0||rr>=N||cc>=N)continue;
+    set(rr,cc,(i>=0&&i<=6&&(j===0||j===6))||(j>=0&&j<=6&&(i===0||i===6))||(i>=2&&i<=4&&j>=2&&j<=4))}};
+  finder(0,0);finder(0,N-7);finder(N-7,0);
+  for(let i=8;i<N-8;i++){set(6,i,i%2===0);set(i,6,i%2===0)}
+  if(ver>=2){const p=4*ver+10;for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++)set(p+i,p+j,Math.max(Math.abs(i),Math.abs(j))!==1)}
+  for(let i=0;i<9;i++){if(i!==6){F[8][i]=true;F[i][8]=true}}
+  for(let i=0;i<8;i++){F[8][N-1-i]=true;F[N-1-i][8]=true}
+  set(N-8,8,true);
+  const maskFn=[(r,c)=>(r+c)%2===0,(r,c)=>r%2===0,(r,c)=>c%3===0,(r,c)=>(r+c)%3===0,
+    (r,c)=>(Math.floor(r/2)+Math.floor(c/3))%2===0,(r,c)=>(r*c)%2+(r*c)%3===0,
+    (r,c)=>((r*c)%2+(r*c)%3)%2===0,(r,c)=>((r*c)%3+(r+c)%2)%2===0];
+  const build=m=>{
+    const Q=M.map(r=>r.slice());
+    let inc=-1,row=N-1,bi=7,by=0;
+    for(let col=N-1;col>0;col-=2){
+      if(col===6)col--;
+      for(;;){
+        for(let c=0;c<2;c++){
+          if(!F[row][col-c]){
+            let d=by<all.length?((all[by]>>bi)&1)===1:false;
+            if(maskFn[m](row,col-c))d=!d;
+            Q[row][col-c]=d;bi--;if(bi<0){by++;bi=7}
+          }
+        }
+        row+=inc;
+        if(row<0||row>=N){row-=inc;inc=-inc;break}
+      }
+    }
+    const d5=(1<<3)|m;let r=d5<<10;
+    for(let i=14;i>=10;i--)if((r>>i)&1)r^=0x537<<(i-10);
+    const fb=(((d5<<10)|r)^0x5412);
+    for(let i=0;i<15;i++){
+      const v=((fb>>i)&1)===1;
+      if(i<6)Q[i][8]=v;else if(i<8)Q[i+1][8]=v;else Q[N-15+i][8]=v;
+      if(i<8)Q[8][N-i-1]=v;else if(i<9)Q[8][15-i]=v;else Q[8][15-i-1]=v;
+    }
+    Q[N-8][8]=true;
+    return Q;
+  };
+  const penalty=Q=>{
+    let p=0;
+    for(let t=0;t<2;t++){
+      for(let a=0;a<N;a++){
+        let run=1;
+        for(let b=1;b<N;b++){
+          const cur=t?Q[b][a]:Q[a][b],prev=t?Q[b-1][a]:Q[a][b-1];
+          if(cur===prev){run++;if(run===5)p+=3;else if(run>5)p++}else run=1;
+        }
+      }
+    }
+    for(let r=0;r<N-1;r++)for(let c=0;c<N-1;c++){const v=Q[r][c];if(v===Q[r][c+1]&&v===Q[r+1][c]&&v===Q[r+1][c+1])p+=3}
+    const pat=[true,false,true,true,true,false,true];
+    for(let r=0;r<N;r++)for(let c=0;c<N-6;c++){
+      for(let t=0;t<2;t++){
+        let ok=true;
+        for(let k=0;k<7&&ok;k++){const v=t?Q[c+k][r]:Q[r][c+k];if(v!==pat[k])ok=false}
+        if(ok)p+=40;
+      }
+    }
+    let dark=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(Q[r][c])dark++;
+    p+=Math.floor(Math.abs(dark*100/(N*N)-50)/5)*10;
+    return p;
+  };
+  let best=null,bp=1e9;
+  for(let m=0;m<8;m++){const Q=build(m),p=penalty(Q);if(p<bp){bp=p;best=Q}}
+  return best;
+}
 function withCredit(o){
-  const bh=Math.round(Math.max(72,o.width*0.1)),c=document.createElement('canvas');
+  const bh=Math.round(Math.max(200,o.width*0.2)),c=document.createElement('canvas');
   c.width=o.width;c.height=o.height+bh;
   const x=c.getContext('2d');x.drawImage(o,0,0);
   x.fillStyle='#14201c';x.fillRect(0,o.height,c.width,bh);
-  let u='';
-  if(/^https?:$/.test(location.protocol))u=(location.origin+location.pathname).replace(/index\.html$/,'').replace(/^https?:\/\//,'');
-  const pad=Math.round(bh*0.3),font='"Hiragino Sans","Noto Sans JP",system-ui,sans-serif';
+  let full='';
+  if(/^https?:$/.test(location.protocol))full=(location.origin+location.pathname).replace(/index\.html$/,'');
+  const u=full.replace(/^https?:\/\//,''),pad=Math.round(bh*0.16),font='"Hiragino Sans","Noto Sans JP",system-ui,sans-serif';
+  let textMax=o.width-pad*2;
+  const q=full?qrMatrix(full):null;
+  if(q){
+    const n=q.length,m=Math.max(2,Math.floor(bh*0.9/(n+6))),side=m*(n+6);
+    const qx=o.width-pad-side,qy=o.height+Math.round((bh-side)/2);
+    x.fillStyle='#ffffff';x.fillRect(qx,qy,side,side);
+    x.fillStyle='#000000';
+    for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q[r][k])x.fillRect(qx+(k+3)*m,qy+(r+3)*m,m,m);
+    textMax=qx-pad*2;
+  }
+  const fit=(t,size,weight)=>{x.font=weight+' '+size+'px '+font;while(x.measureText(t).width>textMax&&size>10){size--;x.font=weight+' '+size+'px '+font}return size};
   x.textBaseline='middle';x.textAlign='left';
-  x.fillStyle='#ffffff';x.font='bold '+Math.round(bh*0.34)+'px '+font;
-  x.fillText(APP_NAME,pad,o.height+(u?bh*0.34:bh*0.5));
-  if(u){x.fillStyle='#ffd23f';x.font=Math.round(bh*0.26)+'px '+font;x.fillText(u,pad,o.height+bh*0.72)}
+  fit(APP_NAME,Math.round(bh*0.24),'bold');
+  x.fillStyle='#ffffff';x.fillText(APP_NAME,pad,o.height+(q?bh*0.28:(u?bh*0.36:bh*0.5)));
+  if(u){fit(u,Math.round(bh*0.15),'normal');x.fillStyle='#ffd23f';x.fillText(u,pad,o.height+(q?bh*0.55:bh*0.68))}
+  if(q){fit(APP_HINT,Math.round(bh*0.12),'normal');x.fillStyle='#b9cbc1';x.fillText(APP_HINT,pad,o.height+bh*0.84)}
   return c;
 }
+let shareFile=null;
+/* 保存画像を、スマホ標準の共有画面（LINE・WhatsAppなど）へ渡す。非対応のブラウザではボタンを出さない */
+function prepShare(c){
+  const b=$('#snapshare');b.hidden=true;shareFile=null;
+  if(!navigator.share||!navigator.canShare)return;
+  c.toBlob(bl=>{
+    if(!bl)return;
+    const f=new File([bl],'form-note.png',{type:'image/png'});
+    if(navigator.canShare({files:[f]})){shareFile=f;b.hidden=false}
+  },'image/png');
+}
+$('#snapshare').onclick=async()=>{
+  if(!shareFile)return;
+  const u=/^https?:$/.test(location.protocol)?(location.origin+location.pathname).replace(/index\.html$/,''):'';
+  try{await navigator.share({files:[shareFile],title:APP_NAME,text:u?APP_NAME+'\n'+u:APP_NAME})}catch(e){}
+};
 $('#snapclose').onclick=()=>$('#snapbox').hidden=true;
 /* Two-pane mode: auto-pick side-by-side or stacked from video aspect ratio and screen size */
 function layout(){
