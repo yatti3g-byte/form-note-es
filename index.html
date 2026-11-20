@@ -29,7 +29,17 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-app
 .bar{display:flex;align-items:center;gap:8px}
 .bar b{width:1.6em;height:1.6em;display:grid;place-items:center;border-radius:50%;background:var(--line)}
 .pane.act .bar b{background:var(--acc);color:var(--accInk)}
-.name{color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{flex-wrap:wrap}
+.bar label.btn{flex:0 0 auto;max-width:100%;white-space:nowrap}
+.ls{display:none}
+/* 2画面を左右に並べるときは幅が狭いので、短い表記にして1行に収める */
+.panes.two:not(.rows) .lf{display:none}
+.panes.two:not(.rows) .ls{display:inline}
+.name{color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 5em;min-width:0}
+.nav{display:flex;align-items:center;gap:4px;margin-left:auto}
+.nav .btn{padding:0 .7rem;justify-content:center}
+.cnt{font-size:13px;color:var(--mute);min-width:2.8em;text-align:center}
+.btn:disabled{opacity:.35;cursor:default}
 .stage{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;position:relative;flex:1;min-height:160px;background:#000;border-radius:8px;overflow:hidden}
 .pane.act .stage{outline:2px solid var(--acc);outline-offset:-2px}
 video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
@@ -41,7 +51,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 input[type=color]{width:44px;height:44px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
 input[type=range]{flex:1;min-width:120px;accent-color:var(--acc);height:44px}
-.t{color:var(--mute);font-size:13px;min-width:9.5em;text-align:right;font-variant-numeric:tabular-nums}
+.t{color:var(--mute);font-size:13px;flex:0 0 auto;width:10.5em;white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+#rel{width:auto;flex:none;align-self:stretch;min-height:1.5em;text-align:left;overflow:hidden;text-overflow:ellipsis}
+.anc{display:contents}
 label.chk{display:inline-flex;align-items:center;gap:6px;min-height:44px}
 #snapbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;padding:12px;z-index:9;color:#fff;text-align:center}
 #snapbox[hidden]{display:none}
@@ -67,6 +79,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;min-height:44px}
   <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Posición de reproducción">
   <span class="t" id="time">0.00 / 0.00 s</span>
 </div>
+<div class="t" id="rel" hidden></div>
 
 <div class="row">
   <select id="speed" aria-label="Velocidad de reproducción">
@@ -77,6 +90,7 @@ label.chk{display:inline-flex;align-items:center;gap:6px;min-height:44px}
   </select>
   <button class="btn" id="cmp">Comparar dos videos</button>
   <label class="chk" id="linkw" hidden><input type="checkbox" id="link" checked>Sincronizar A y B</label>
+  <span class="anc" hidden><button class="btn" id="anchor" disabled>Sincronizar aquí</button><button class="btn" id="goanchor" disabled>Volver al punto</button></span>
   <button class="btn" id="snap">Guardar imagen</button>
   <a class="btn" href="help.html" target="_blank" rel="noopener" style="text-decoration:none">Cómo usar</a>
 </div>
@@ -133,23 +147,28 @@ function nrm(p,e){
 
 const panes=[0,1].map(i=>{
   const el=document.createElement('section');el.className='pane';
-  el.innerHTML='<div class="bar"><b>'+'AB'[i]+'</b><label class="btn">Elegir video<input type="file" accept="video/*" hidden></label><span class="name">Ningún video seleccionado</span></div>'+
+  el.innerHTML='<div class="bar"><b>'+'AB'[i]+'</b><label class="btn" aria-label="Elegir video"><span class="lf">Elegir video</span><span class="ls">Elegir</span><input type="file" accept="video/*" multiple hidden></label><span class="name">Ningún video seleccionado</span><span class="nav" hidden><button type="button" class="btn" data-d="-1" aria-label="Video anterior">◀</button><span class="cnt"></span><button type="button" class="btn" data-d="1" aria-label="Video siguiente">▶</button></span></div>'+
   '<div class="stage"><video playsinline muted preload="metadata"></video><canvas></canvas><p class="empty">Toca “Elegir video”<br>para abrir un video de tu teléfono</p></div>';
   $('#panes').append(el);
-  const p={i,el,v:el.querySelector('video'),c:el.querySelector('canvas'),shapes:[],cur:null,pend:null};
+  const p={i,el,v:el.querySelector('video'),c:el.querySelector('canvas'),shapes:[],cur:null,pend:null,list:[],pos:0};
   p.x=p.c.getContext('2d');
-  el.querySelector('input').onchange=e=>{
-    const f=e.target.files[0];if(!f)return;
+  /* 複数の動画をまとめて選べる。◀ ▶ で前後の動画へすばやく切り替える(切り替えると書き込みは消える) */
+  const navUI=()=>{const nv=el.querySelector('.nav'),n=p.list.length,[b0,b1]=nv.querySelectorAll('button');
+    nv.hidden=n<2;el.querySelector('.cnt').textContent=(p.pos+1)+'/'+n;b0.disabled=p.pos<=0;b1.disabled=p.pos>=n-1};
+  const open=n=>{
+    const f=p.list[n];if(!f)return;p.pos=n;
     if(p.url)URL.revokeObjectURL(p.url);
     p.url=URL.createObjectURL(f);p.off=0;p.pts=null;p.first=true;
     p.v.src=p.url;
     el.querySelector('.name').textContent=f.name;
     el.querySelector('.empty').hidden=true;
-    p.shapes=[];p.pend=null;setActive(i);
+    p.shapes=[];p.pend=null;p.cur=null;p.anchor=null;setActive(i);navUI();ancUI();
   };
+  el.querySelector('input').onchange=e=>{const fs=[...e.target.files];if(!fs.length)return;p.list=fs;open(0);e.target.value=''};
+  el.querySelectorAll('.nav button').forEach(bt=>bt.onclick=()=>open(p.pos+(+bt.dataset.d)));
   const bad=()=>{const m=el.querySelector('.empty');m.innerHTML='No se puede reproducir este video.<br>Es posible que su formato no sea compatible con este dispositivo.';m.hidden=false};
   p.v.onerror=()=>{if(p.v.getAttribute('src'))bad()};
-  p.v.onloadedmetadata=()=>{if(!p.v.videoWidth){bad();return}layout();redraw(p);sync()};
+  p.v.onloadedmetadata=()=>{if(!p.v.videoWidth){bad();return}layout();redraw(p);sync();ancUI()};
   /* 表示中のコマの時刻(pts)を常に記録する。スライダーや再生停止のあと、任意の時刻から正確に1コマ動かすため */
   p.pts=null;p.first=true;
   p.wait=[];
@@ -202,29 +221,54 @@ function setActive(i){
 }
 function sync(){
   const v=panes[active].v,d=v.duration;
-  if(!d||!isFinite(d)){$('#time').textContent='0.00 / 0.00 s';return}
+  if(!d||!isFinite(d)){$('#time').textContent='0.00 / 0.00 s';$('#rel').textContent='';return}
   $('#seek').value=v.currentTime/d*1000;
+  let extra='';
+  /* 基準を決めたあとは、基準(0)からのコマ数と秒数も表示する */
+  if(compare&&panes.every(q=>q.anchor!=null)){
+    const rel=v.currentTime-panes[active].anchor,n=Math.round(rel*fps()),a=(n>0?'+':n<0?'−':'±')+Math.abs(n),b=(Math.abs(rel)<0.0005?'±':rel>0?'+':'−')+Math.abs(rel).toFixed(3);
+    extra=('Punto base '+a+' fotogramas ('+b+' s)');
+  }
   $('#time').textContent=v.currentTime.toFixed(2)+' / '+d.toFixed(2)+' s';
+  $('#rel').textContent=extra;
 }
-function step(dir){
-  /* コマの「真ん中」を狙ってシークする。n/fps ちょうどを指定すると、時刻の丸め誤差で前のコマに戻ることがあるため。
-     表示中のコマは、記録しておいたコマの時刻(pts)から正確に求める */
-  const f=fps();
-  T().forEach(p=>{
-    const v=p.v;v.pause();
-    const run=()=>{
-      const o=(p.off||0)%(1/f),last=Math.max(0,Math.round((v.duration||0)*f)-1);
-      const fresh=p.pts!=null&&!p.stale&&!v.seeking&&Math.abs(v.currentTime-p.pts)<=1/f+1e-3;
-      const cur=fresh?Math.round((p.pts-o)*f):Math.floor((v.currentTime-o)*f+0.25);
-      const n=Math.min(last,Math.max(0,Math.min(last,cur)+dir));
-      p.tgt=o+(n+0.5)/f;v.currentTime=p.tgt;
-    };
-    if(p.stale&&!p.mid&&v.requestVideoFrameCallback){
-      let done=false;const fin=ok=>{if(done)return;done=true;if(ok===false)p.stale=false;run()};
-      p.wait.push(()=>fin());setTimeout(()=>fin(false),150);
-    }else run();
+/* 表示中のコマの番号。記録したコマの時刻(pts)から求める */
+function curFrame(p,f){
+  const v=p.v,o=(p.off||0)%(1/f),last=Math.max(0,Math.round((v.duration||0)*f)-1);
+  const fresh=p.pts!=null&&!p.stale&&!v.seeking&&Math.abs(v.currentTime-p.pts)<=1/f+1e-3;
+  const cur=fresh?Math.round((p.pts-o)*f):Math.floor((v.currentTime-o)*f+0.25);
+  return{o,last,n:Math.min(last,Math.max(0,cur))};
+}
+/* シーク直後は、新しいコマの時刻が届くまで待ってから、全画面分そろって cb を呼ぶ */
+function settled(ps,cb){
+  let left=ps.length;if(!left)return;
+  ps.forEach(p=>{
+    let done=false;const fin=ok=>{if(done)return;done=true;if(ok===false)p.stale=false;if(--left===0)cb()};
+    if(p.stale&&!p.mid&&p.v.requestVideoFrameCallback){p.wait.push(()=>fin());setTimeout(()=>fin(false),150)}else fin();
   });
 }
+/* 全画面を同じコマ数だけ動かす。どれか1つでも動画の端を越えるときは、全部動かさない(差が崩れないように)。
+   コマの「真ん中」を狙ってシークする。n/fps ちょうどを指定すると、時刻の丸め誤差で前のコマに戻ることがあるため */
+function goFrames(ps,f,delta){
+  const cs=ps.map(p=>curFrame(p,f));
+  if(cs.some(c=>c.n+delta<0||c.n+delta>c.last))return;
+  ps.forEach((p,k)=>{const c=cs[k];p.tgt=c.o+(c.n+delta+0.5)/f;p.v.currentTime=p.tgt});
+}
+function step(dir){
+  const ps=T();ps.forEach(p=>p.v.pause());
+  settled(ps,()=>goFrames(ps,fps(),dir));
+}
+/* 「ここを基準に同期」: A・Bそれぞれの、いま止めているコマを基準(0)にする */
+function ancUI(){
+  const ok=panes.filter(p=>p.v.getAttribute('src')&&p.v.videoWidth>0).length>=2,on=panes.every(p=>p.anchor!=null);
+  $('#anchor').disabled=!ok;$('#anchor').classList.toggle('on',on);$('#goanchor').disabled=!on;sync();
+}
+$('#anchor').onclick=()=>{
+  const ps=panes.filter(p=>p.v.getAttribute('src')&&p.v.videoWidth>0);if(ps.length<2)return;
+  ps.forEach(p=>p.v.pause());$('#link').checked=true;
+  settled(ps,()=>{const f=fps();ps.forEach(p=>{const c=curFrame(p,f);p.anchor=c.o+(c.n+0.5)/f;p.tgt=p.anchor;p.v.currentTime=p.anchor});ancUI()});
+};
+$('#goanchor').onclick=()=>panes.forEach(p=>{if(p.anchor!=null){p.v.pause();p.tgt=p.anchor;p.v.currentTime=p.anchor}});
 $('#prev').onclick=()=>step(-1);
 $('#next').onclick=()=>step(1);
 $('#play').onclick=()=>{
@@ -235,16 +279,24 @@ $('#play').onclick=()=>{
 };
 $('#speed').onchange=()=>panes.forEach(p=>p.v.playbackRate=+$('#speed').value);
 $('#seek').oninput=e=>{
-  /* 連動中は、操作した画面の移動量(秒)をもう一方にも同じだけ加える。A・Bの位置の差が保たれる */
   const ts=T(),base=ts.includes(panes[active])?panes[active]:ts[0];if(!base)return;
-  const nt=e.target.value/1000*(base.v.duration||0),dt=nt-base.v.currentTime;
-  ts.forEach(p=>{p.v.pause();p.v.currentTime=p===base?nt:Math.min(p.v.duration||0,Math.max(0,p.v.currentTime+dt))});
+  const raw=e.target.value/1000*(base.v.duration||0);
+  if(ts.length<2){ts.forEach(p=>{p.v.pause();p.v.currentTime=raw});return}
+  /* 連動中は、操作した画面が動いたコマ数を、もう一方にも同じだけ加える。A・Bの位置の差が、コマ単位で正確に保たれる */
+  ts.forEach(p=>p.v.pause());
+  settled(ts,()=>{
+    const f=fps(),cs=ts.map(p=>curFrame(p,f)),b=cs[ts.indexOf(base)];
+    let d=Math.floor((raw-b.o)*f+1e-3)-b.n;
+    d=Math.min(Math.min(...cs.map(c=>c.last-c.n)),Math.max(Math.max(...cs.map(c=>-c.n)),d));
+    ts.forEach((p,j)=>{p.tgt=cs[j].o+(cs[j].n+d+0.5)/f;p.v.currentTime=p.tgt});
+  });
 };
 $('#cmp').onclick=()=>{
   compare=!compare;
   panes[1].el.hidden=!compare;
   $('#panes').classList.toggle('two',compare);
   $('#linkw').hidden=!compare;
+  document.querySelector('.anc').hidden=!compare;$('#rel').hidden=!compare;ancUI();
   $('#cmp').classList.toggle('on',compare);
   if(!compare&&active===1)setActive(0);
   $('#cmp').textContent=compare?'Una sola vista':'Comparar dos videos';
