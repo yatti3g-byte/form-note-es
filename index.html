@@ -24,7 +24,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 "Hiragino Sans
 .panes{display:grid;grid-template-columns:1fr;gap:6px;flex:1;min-height:0}
 .panes.two{grid-template-columns:1fr 1fr}
 .panes.two.rows{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
-.panes{min-height:min-content}.panes.two.rows{min-height:420px}
+.panes{min-height:250px}.panes.two.rows{min-height:420px}
 .pane{display:flex;flex-direction:column;gap:4px;min-height:0;min-width:0}
 [hidden]{display:none!important}
 .bar{display:flex;align-items:center;gap:8px}
@@ -95,7 +95,8 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
 #rel{grid-area:rel;font-size:12px}
 @media (orientation:landscape) and (max-height:560px){
   .stage{min-height:110px}.panes{min-height:160px}.panes.two.rows{min-height:320px}
-  .ctl{max-width:none;display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"play seek" "set rel" "pair act" "tut tut" "draw draw";align-items:start}
+  .ctl{max-width:none;display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"play seek" "set rel" "pair act" "tut draw";align-items:start}
+  .g-tut{justify-content:flex-start}.g-tut .tl{display:none}.g-pair{grid-template-columns:1.5fr 1fr 1fr}.g-pair .chk{grid-column:auto}.g-tut .lnk{min-height:36px}details.draw summary{padding:6px 4px}
 }
 
 .g-tut{grid-area:tut;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 4px;font-size:14px;color:var(--mute)}
@@ -135,7 +136,7 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
     <select id="speed" aria-label="Velocidad de reproducción">
       <option value="0.1">0.1x</option><option value="0.25" selected>0.25x</option><option value="0.5">0.5x</option><option value="1">1x</option>
     </select>
-    <select id="fps" aria-label="Fotogramas por segundo">
+    <select id="fps" aria-label="Fotogramas por segundo con los que grabaste (fps)">
       <option value="24">24fps</option><option value="30" selected>30fps</option><option value="60">60fps</option><option value="120">120fps</option><option value="240">240fps</option>
     </select>
     <button class="btn" id="cmp">Comparar</button>
@@ -168,13 +169,13 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
 
 <div id="tutmask" hidden></div><div id="tutcard" hidden role="dialog" aria-live="polite"></div>
 <div id="snapbox" hidden>
-  <div class="seg"><button class="btn on" id="m1">Este momento</button><button class="btn" id="m4">4 alrededor</button><label id="ivw" hidden>Intervalo <select id="burstiv"><option value="1">1 fotograma</option><option value="2">2 fotogramas</option><option value="3">3 fotogramas</option><option value="5" selected>5 fotogramas</option><option value="10">10 fotogramas</option><option value="15">15 fotogramas</option><option value="30">30 fotogramas</option></select></label></div>
+  <div class="seg"><button class="btn on" id="m1">Este momento</button><button class="btn" id="m4">4 fotogramas</button><label id="ivw" hidden>Intervalo <select id="burstiv"><option value="1">1 fotograma</option><option value="2">2 fotogramas</option><option value="3">3 fotogramas</option><option value="5" selected>5 fotogramas</option><option value="10">10 fotogramas</option><option value="15">15 fotogramas</option><option value="30">30 fotogramas</option></select></label></div>
   <img id="snapimg" alt="Imagen fija">
   <p class="hint" id="snaphint">Mantén pulsada la imagen para guardarla.</p>
   <div class="row" style="justify-content:center"><button class="btn on" id="snapshare" hidden>Compartir</button><button class="btn" id="snapclose">Cerrar</button></div>
   <div id="aipanel" hidden>
-    <div class="row" style="justify-content:center"><select id="aikind"><option>Bateo (swing)</option><option>Lanzamiento (tiro)</option></select><input id="aictx" type="text" maxlength="80" placeholder="Edad, lado, problema"></div>
-    <select id="aipair" hidden><option value="">A y B: sin especificar</option><option value="self">Ambos soy yo (otro día o estado)</option><option value="AM">A soy yo, B es el modelo</option><option value="MA">A es el modelo, B soy yo</option></select>
+    <div class="row" style="justify-content:center"><select id="aikind"><option>Bateo</option><option>Lanzamiento</option></select><input id="aictx" type="text" maxlength="80" placeholder="Edad, mano con la que bateas/lanzas, qué mejorar"></div>
+    <select id="aipair" hidden><option value="">A y B: sin especificar</option><option value="self">Ambos videos son míos (otro día o estado)</option><option value="AM">A soy yo, B es el modelo</option><option value="MA">A es el modelo, B soy yo</option></select>
     <textarea id="aitext" rows="6" aria-label="Pregunta para la IA"></textarea>
     <button class="btn on" id="aisend">Copiar pregunta y enviar a app de IA</button>
     <div id="aimsg" role="status"></div>
@@ -289,7 +290,7 @@ const panes=[0,1].map(i=>{
 });
 
 const fps=()=>+$('#fps').value;
-const T=()=>(compare&&$('#link').checked?panes:[panes[active]]).filter(p=>p.v.getAttribute('src'));
+const T=()=>(compare&&$('#link').checked?panes:[panes[active]]).filter(p=>p.v.getAttribute('src')&&p.v.videoWidth>0);
 
 const PLAYTXT=['Reproducir','Pausar'];
 function fixPlayW(){const b=$('#play'),keep=b.textContent;b.style.minWidth='';let w=0;PLAYTXT.forEach(t=>{b.textContent=t;w=Math.max(w,b.getBoundingClientRect().width)});b.textContent=keep;b.style.minWidth=Math.ceil(w)+'px';b.style.justifyContent='center'}
@@ -336,7 +337,9 @@ function settled(ps,cb){
   let left=ps.length;if(!left)return;
   ps.forEach(p=>{
     let done=false;const fin=ok=>{if(done)return;done=true;if(ok===false)p.stale=false;if(--left===0)cb()};
-    if(p.stale&&!p.mid&&p.v.requestVideoFrameCallback){p.wait.push(()=>fin());setTimeout(()=>fin(false),150)}else fin();
+    if(p.stale&&!p.mid&&p.v.requestVideoFrameCallback){p.wait.push(()=>fin());setTimeout(()=>fin(false),150)}
+    else if(p.stale&&!p.v.requestVideoFrameCallback){requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>fin(),60)))}
+    else fin();
   });
 }
 
@@ -518,6 +521,7 @@ function buildSheet(sheet){
 let bursting=false;
 const seekWait=ps=>Promise.all(ps.map(p=>new Promise(r=>{const v=p.v;let d=false;const f=()=>{if(d)return;d=true;v.removeEventListener('seeked',f);r()};v.addEventListener('seeked',f);setTimeout(f,1500)})));
 const settleP=ps=>new Promise(r=>settled(ps,r));
+const SETTLE_MS=('requestVideoFrameCallback' in HTMLVideoElement.prototype)?60:200;  
 async function buildFour(clean){
   if(bursting)return;
   const ts=T().filter(p=>p.v.videoWidth);if(!ts.length)return;
@@ -525,6 +529,7 @@ async function buildFour(clean){
   aiPair=ts.length>1;
   bursting=true;ctl.forEach(e=>e.disabled=true);btn.textContent='Creando…';
   ts.forEach(p=>p.v.pause());
+  let at=0;
   try{
     await settleP(ts);
     const cs=framesOf(ts,f),lo=-Math.min(...cs.map(c=>c.n)),hi=Math.min(...cs.map(c=>c.last-c.n));
@@ -533,9 +538,9 @@ async function buildFour(clean){
     let nb=Math.min(2,mb),na=Math.min(ma,3-nb);nb=Math.min(mb,3-na);
     let ds=[];for(let k=-nb;k<=na;k++)ds.push(k*iv);
     if(ds.length<2){btn.dataset.keep='1';btn.textContent='Demasiado cerca del final del video';setTimeout(()=>{delete btn.dataset.keep;btn.textContent=lab},1800);return}
-    const items=[];let at=0;
+    const items=[];at=0;
     for(const d of ds){
-      if(d!==at){goFrames(ts,f,d-at);at=d;await seekWait(ts);await settleP(ts);await new Promise(r=>setTimeout(r,60))}
+      if(d!==at){goFrames(ts,f,d-at);at=d;await seekWait(ts);await settleP(ts);await new Promise(r=>setTimeout(r,SETTLE_MS))}
       const fr=ts.map(p=>frame(p,!clean)).filter(Boolean);if(!fr.length)continue;
       const h=Math.min(...fr.map(c=>c.height)),ws=fr.map(c=>c.width*h/c.height);
       const o=document.createElement('canvas');o.width=Math.round(ws.reduce((a,c)=>a+c));o.height=h;
@@ -543,26 +548,28 @@ async function buildFour(clean){
       let tags=null;if(fr.length>1){let ac=0;const tw=ws.reduce((a,c)=>a+c);tags=fr.map((c,k)=>{ac+=ws[k];return{x:ac/tw,l:String.fromCharCode(65+k)}})}
       items.push({c:shrink(o,1600),cap:(d===0?'● ':'')+capText(),tags});
     }
-    if(at!==0){goFrames(ts,f,-at);await seekWait(ts);await settleP(ts)}
+    if(at!==0){goFrames(ts,f,-at);at=0;await seekWait(ts);await settleP(ts)}
     const cc=withCredit(buildSheet(items));view[clean?5:4]={cc,items,url:cc.toDataURL('image/png')};
-  }finally{bursting=false;ctl.forEach(e=>e.disabled=false);if(!btn.dataset.keep)btn.textContent=lab}
+  }finally{
+    if(at!==0){try{goFrames(ts,f,-at);at=0}catch(e){}}  
+    bursting=false;ctl.forEach(e=>e.disabled=false);if(!btn.dataset.keep)btn.textContent=lab}
 }
 
 
 function aiPrompt(){
   const kind=$('#aikind').value,ctx=$('#aictx').value.trim()||'(sin rellenar)',bat=/Bateo/.test(kind);
-  const rel={'':'No se ha indicado la relación entre A y B (cuál soy yo y cuál es el modelo). Compara los dos.','self':'A y B son ambos mi propia técnica (dos días o estados distintos). Compara qué ha mejorado, qué sigue igual y qué ha empeorado.','AM':'A es mi técnica y B es el modelo con el que quiero compararme.','MA':'A es el modelo y B es mi técnica.'}[$('#aipair').value]||'';
+  const rel={'':'No se ha indicado la relación entre A y B (cuál soy yo y cuál es el modelo). Compara los dos.','self':'A y B son videos míos grabados en distintos días o en diferentes condiciones. Compara qué ha mejorado, qué sigue igual y qué ha empeorado.','AM':'A es mi técnica y B es el modelo con el que quiero compararme.','MA':'A es el modelo y B es mi técnica.'}[$('#aipair').value]||'';
   const look=aiPair
     ?'- La imagen muestra 4 momentos en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- En cada momento, la mitad izquierda es A y la derecha es B, cada una con una marca amarilla “A” o “B” arriba a la derecha. Refiérete a ellos como “1-A”, “1-B”, etc.\n- El mismo número es el mismo momento para A y B (ambos videos se movieron el mismo número de fotogramas; si se usa el punto de sincronía, las posiciones respecto a ese punto coinciden). El texto de abajo a la izquierda es el número de fotogramas desde el punto de sincronía (o el tiempo del video).'
     :'- La imagen muestra 4 momentos consecutivos del mismo video, en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- El texto de abajo a la izquierda de cada momento es el tiempo del video. Refiérete a los momentos por su número, como “momento 2” o “momentos 3 a 4”.\n- El momento marcado con ● es el que detuve y elegí.';
   const cmp=aiPair
-    ?'1. Comparación: para cada número (1, 2, 3, 4), compara A y B. Para cada número escribe qué es distinto y cuál se ve mejor o peor (por ejemplo “diferencia entre 1-A y 1-B”). Al final resume qué cambió de A a B y qué mejoró o empeoró en general. No mires solo un lado.'
+    ?'1. Comparación: para cada número (1, 2, 3, 4), compara A y B. Para cada número escribe qué es distinto (por ejemplo “diferencia entre 1-A y 1-B”) y qué podría significar para el swing o el lanzamiento. Al final resume qué cambió de A a B y qué parece haber mejorado o empeorado en general. No mires solo un lado.'
     :'1. Cambio: describe en orden cómo cambian el timing y la postura a lo largo de los momentos 1, 2, 3 y 4.';
   const pts=bat
     ?'inicio del movimiento y transferencia de peso a la pierna de atrás, momento en que aterriza el pie delantero, posición de la carga (postura y manos), hombro delantero y apertura del cuerpo, posición de codos y manos, rotación de cadera, posición de la cabeza, extensión de los brazos cerca del contacto'
     :'timing de la pierna de apoyo y del paso, recogida y apertura del lado del guante, posición de codo y hombro, inclinación del tronco y apertura del cuerpo, punto de suelta, estabilidad de la cabeza, transferencia de peso';
   const hint=bat&&/tarde|atras|encima|timing/i.test(ctx)?'\n- El problema tiene que ver con el timing, así que presta especial atención al inicio del movimiento, la transferencia de peso a la pierna de atrás, el aterrizaje del pie delantero y el momento en que empieza el swing.':'';
-  return 'Revisa por favor la técnica de béisbol de las imágenes ('+kind+').\n\n[Contexto]\n'+ctx+'\n'+(aiPair?rel+'\n':'')+'\n[Cómo leer la imagen]\n'+look+'\n\n[Puntos a observar (candidatos)]\n'+pts+'\n- Son solo candidatos. Juzga únicamente por lo que se ve realmente en las imágenes y da prioridad a lo que parezca relacionado con mi problema.'+hint+'\n- Si algo está oculto, es muy pequeño o no se puede juzgar por el ángulo, escribe “no se puede determinar” en lugar de suponer.\n\n[Petición]\n0. Primero, escribe una línea por momento con lo que se ve (dirección del cuerpo, posición de los pies, posición de brazos, manos y '+(bat?'bate':'pelota y guante')+').\n'+cmp+'\n2. Puntos buenos (2 a 3)\n3. Puntos a mejorar (2 a 3). Para cada uno, indica la evidencia: en qué momento y en qué parte del cuerpo (número y parte del cuerpo).\n4. Ejercicios de mejora (3 que se puedan hacer en casa o en el campo, con cómo hacerlos, un número aproximado de repeticiones y precauciones)\n5. Consejos para la próxima vez que grabe (posición de la cámara, ángulo y momento)\n\n[Ten en cuenta]\n- Es una valoración solo con imágenes fijas, así que no seas categórico; usa expresiones como “por lo que se ve” y “podría ser que…”\n- Si en [Contexto] se indica edad o curso, aconseja según la etapa de crecimiento y la capacidad física de esa edad y prioriza la prevención de lesiones (si no se indica, no supongas la edad). No impongas estándares profesionales\n- Si tengo dolor o molestias, dime que no fuerce y que consulte a un médico o entrenador\n- Da una breve explicación de los términos técnicos';
+  return 'Analiza la mecánica del jugador a partir de las imágenes ('+kind+').\n\n[Contexto]\n'+ctx+'\n'+(aiPair?rel+'\n':'')+'\n[Cómo leer la imagen]\n'+look+'\n\n[Puntos a observar (candidatos)]\n'+pts+'\n- Son solo candidatos. Juzga únicamente por lo que se ve realmente en las imágenes y da prioridad a lo que parezca relacionado con mi problema.'+hint+'\n- Si algo está oculto, es muy pequeño o no se puede juzgar por el ángulo, escribe “no se puede determinar” en lugar de suponer.\n\n[Petición]\n0. Primero, escribe una línea por momento con lo que se ve (dirección del cuerpo, posición de los pies, posición de brazos, manos y '+(bat?'bate':'pelota y guante')+').\n'+cmp+'\n2. Puntos buenos (2 a 3)\n3. Puntos a mejorar (2 a 3). Para cada uno, indica la evidencia: en qué momento y en qué parte del cuerpo (número y parte del cuerpo).\n4. Ejercicios de mejora (3 que se puedan hacer en casa o en el campo, con cómo hacerlos, un número aproximado de repeticiones y precauciones)\n5. Consejos para la próxima vez que grabe (posición de la cámara, ángulo y momento)\n\n[Ten en cuenta]\n- Es una valoración solo con imágenes fijas, así que no seas categórico; usa expresiones como “por lo que se ve” y “podría ser que…”\n- Si en [Contexto] se indica edad o curso, aconseja según la etapa de crecimiento y la capacidad física de esa edad y prioriza la prevención de lesiones (si no se indica, no supongas la edad). No impongas estándares profesionales\n- Si tengo dolor o molestias, dime que no fuerce y que consulte a un médico o entrenador\n- Da una breve explicación de los términos técnicos';
 }
 let aiEdited=false;
 function aiFill(){
