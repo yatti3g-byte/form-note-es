@@ -20,10 +20,11 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a16;--panel:#18251f;--line:#2b3d35;--ink:#e6efe9;--mute:#93a79c;--acc:#ffd23f;--accInk:#14201c;color-scheme:dark}}
 :root[data-theme="dark"]{--bg:#0f1a16;--panel:#18251f;--line:#2b3d35;--ink:#e6efe9;--mute:#93a79c;--acc:#ffd23f;--accInk:#14201c;color-scheme:dark}
 html,body{height:100%;overscroll-behavior:none}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;gap:6px;padding:6px;box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 "Hiragino Sans","Noto Sans JP","Yu Gothic",system-ui,sans-serif;display:flex;flex-direction:column;gap:6px;padding:6px;box-sizing:border-box}
 .panes{display:grid;grid-template-columns:1fr;gap:6px;flex:1;min-height:0}
 .panes.two{grid-template-columns:1fr 1fr}
 .panes.two.rows{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+.panes{min-height:min-content}.panes.two.rows{min-height:420px}
 .pane{display:flex;flex-direction:column;gap:4px;min-height:0;min-width:0}
 [hidden]{display:none!important}
 .bar{display:flex;align-items:center;gap:8px}
@@ -32,7 +33,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,-app
 .bar{flex-wrap:wrap}
 .bar label.btn{flex:0 0 auto;max-width:100%;white-space:nowrap}
 .ls{display:none}
-/* 2画面を左右に並べるときは幅が狭いので、短い表記にして1行に収める */
+
 .panes.two:not(.rows) .lf{display:none}
 .panes.two:not(.rows) .ls{display:inline}
 .name{color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1 1 5em;min-width:0}
@@ -55,50 +56,129 @@ input[type=range]{flex:1;min-width:120px;accent-color:var(--acc);height:44px}
 #rel{width:auto;flex:none;align-self:stretch;min-height:1.5em;text-align:left;overflow:hidden;text-overflow:ellipsis}
 .anc{display:contents}
 label.chk{display:inline-flex;align-items:center;gap:6px;min-height:44px}
-#snapbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;padding:12px;z-index:9;color:#fff;text-align:center}
+#snapbox{position:fixed;inset:0;background:rgba(0,0,0,.94);display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:flex-start;padding:12px;z-index:9;color:#fff;text-align:center;overflow:auto}
 #snapbox[hidden]{display:none}
-#snapbox img{max-width:100%;max-height:70%;object-fit:contain}
+#snapbox img{max-width:100%;max-height:52vh;object-fit:contain;flex:0 0 auto}
+#snapbox.ai img{max-height:30vh}
+#snapbox .hint{margin:0;font-size:13px;color:#cfd8d3}
+.seg{display:flex;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap}
+.seg label{color:#fff;font-size:14px}
+#aipanel{display:flex;flex-direction:column;gap:6px;width:100%;max-width:520px}
+#aipanel input,#aipanel select,#aipanel textarea,.seg select{font:inherit;font-size:14px;padding:6px;border-radius:8px;border:1px solid #6a7a73;background:#fff;color:#14201c;max-width:100%}
+#aipanel input{flex:1;min-width:0}
+#aipanel textarea{width:100%;box-sizing:border-box;resize:vertical}
+#aimsg{font-size:13px;color:#ffd23f;min-height:1.3em}
+a.lnk{color:var(--mute);font-size:14px;padding:10px 8px;text-decoration:underline;white-space:nowrap}
+.ctl{display:flex;flex-direction:column;gap:6px;width:100%;max-width:640px;margin:0 auto}
+.ctl .btn,.ctl select{width:100%;justify-content:center;box-sizing:border-box;padding:0 .4rem;white-space:nowrap}
+.g-tools{display:grid;grid-template-columns:1fr 1fr 1.7fr 48px;gap:6px;grid-area:tools}
+.g-tools input[type=color]{width:100%;min-width:0;box-sizing:border-box}
+.g-edit{display:grid;grid-template-columns:5.2em 6em 1fr;gap:6px;align-items:center;grid-area:edit}
+.hintline{font-size:12px;color:var(--mute);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-play{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:6px;grid-area:play}
+.g-seek{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;grid-area:seek}
+.g-seek input[type=range]{min-width:0;width:100%;margin:0}
+.g-set{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:6px;grid-area:set}
+.g-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px;grid-area:pair}
+.g-pair .chk{grid-column:1/-1;min-height:36px;justify-content:flex-start;white-space:nowrap}
+.chk input{accent-color:var(--acc);width:20px;height:20px}
+.g-act{display:grid;grid-template-columns:1.35fr 1fr auto;gap:6px;align-items:center;grid-area:act}
+.g-act #aimain{font-weight:700}
+details.draw{grid-area:draw;border-top:1px solid var(--line);padding-top:4px}
+details.draw summary{cursor:pointer;color:var(--mute);font-size:14px;padding:10px 4px;list-style:none;display:flex;align-items:center;gap:6px}
+details.draw summary::-webkit-details-marker{display:none}
+details.draw summary::before{content:'▸';display:inline-block;transition:transform .15s}
+details.draw[open] summary::before{transform:rotate(90deg)}
+details.draw[open]{display:flex;flex-direction:column;gap:6px}
+details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
+.aimode #m1,.aimode #m4,.aimode #snapshare{display:none}
+#rel{grid-area:rel;font-size:12px}
+@media (orientation:landscape) and (max-height:560px){
+  .stage{min-height:110px}.panes{min-height:160px}.panes.two.rows{min-height:320px}
+  .ctl{max-width:none;display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"play seek" "set rel" "pair act" "tut tut" "draw draw";align-items:start}
+}
+
+.g-tut{grid-area:tut;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 4px;font-size:14px;color:var(--mute)}
+.g-tut .tl{flex-basis:100%;text-align:center;margin-top:2px}.g-tut .lnk{padding:0 10px}
+.g-tut .lnk{background:none;border:0;font:inherit;font-size:14px;cursor:pointer;color:var(--accent,#0f6b4b);min-height:44px}
+#tutmask{position:fixed;z-index:30;border-radius:10px;box-shadow:0 0 0 9999px rgba(0,0,0,.6);outline:3px solid #ffd23f;pointer-events:none;transition:all .2s}
+#tutcard{position:fixed;left:12px;right:12px;max-width:520px;margin:0 auto;z-index:31;background:#fff;color:#1b2b24;border-radius:12px;padding:14px 16px;box-shadow:0 6px 24px rgba(0,0,0,.4);font-size:15px;line-height:1.6}
+#tutcard h3{margin:0 0 4px;font-size:16px}
+#tutcard p{margin:0 0 10px;line-height:1.7;word-break:auto-phrase;text-wrap:pretty;line-break:strict}
+#tutcard .row{display:flex;gap:8px;align-items:center}
+#tutcard .row .grow{flex:1;font-size:12px;color:#5b6b63}
+#tutcard button{color:#1b2b24;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #c9d3cd;background:#fff;font:inherit;cursor:pointer}
+#tutcard button.go{background:#0f6b4b;color:#fff !important;border-color:#0f6b4b;font-weight:700}
+#tutcard button:disabled{opacity:.4}
+#tutbn{max-width:640px;margin:0 auto 6px;background:#0f6b4b;color:#fff;border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:center;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+#tutbn span{flex:1}.nb{white-space:normal}#tutbn button{min-height:44px;border-radius:8px;border:1px solid #fff;background:transparent;color:#fff;font:inherit;padding:0 12px;cursor:pointer}
+#tutbn[hidden],#tutmask[hidden],#tutcard[hidden]{display:none!important}
+#tutbn button.go{background:#fff;color:#0f6b4b;font-weight:700}
 </style>
 </head>
 <body>
+<div id="tutbn" hidden><span><span class="nb">¿Primera vez? </span><span class="nb">Te guiamos para consultar </span><span class="nb">a la IA.</span></span><button class="go" id="tutgo">Ver guía</button><button id="tutno" aria-label="Cerrar">×</button></div>
 <div class="panes" id="panes"></div>
 
-<div class="row" id="tools">
-  <button class="btn on" data-tool="line">Línea</button>
-  <button class="btn" data-tool="angle">Ángulo (toca 3 puntos)</button>
-  <button class="btn" data-tool="pen">Mano alzada</button>
-  <input type="color" id="col" value="#ffd23f" aria-label="Color de línea">
-  <button class="btn" id="undo">Deshacer</button>
-  <button class="btn" id="clear">Borrar dibujos</button>
+<div class="ctl">
+  <div class="g-play">
+    <button class="btn" id="prev" aria-label="Retroceder un fotograma">◀ 1 fot.</button>
+    <button class="btn" id="play">Reproducir</button>
+    <button class="btn" id="next" aria-label="Avanzar un fotograma">1 fot. ▶</button>
+  </div>
+  <div class="g-seek">
+    <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Posición de reproducción">
+    <span class="t" id="time">0.00 / 0.00 s</span>
+  </div>
+  <div class="t" id="rel" hidden></div>
+  <div class="g-set">
+    <select id="speed" aria-label="Velocidad de reproducción">
+      <option value="0.1">0.1x</option><option value="0.25" selected>0.25x</option><option value="0.5">0.5x</option><option value="1">1x</option>
+    </select>
+    <select id="fps" aria-label="Fotogramas por segundo">
+      <option value="24">24fps</option><option value="30" selected>30fps</option><option value="60">60fps</option><option value="120">120fps</option><option value="240">240fps</option>
+    </select>
+    <button class="btn" id="cmp">Comparar</button>
+  </div>
+  <div class="g-pair" id="pairrow" hidden>
+    <label class="chk" id="linkw" hidden><input type="checkbox" id="link" checked>Sincronizar A y B (se mueven juntos)</label>
+    <span class="anc" hidden><button class="btn" id="anchor" disabled>Sincronizar aquí</button><button class="btn" id="goanchor" disabled>Volver al punto</button></span>
+  </div>
+  <div class="g-act">
+    <button class="btn on" id="aimain">Preguntar a IA</button>
+    <button class="btn" id="snap">Compartir</button>
+    <a class="lnk" href="help.html" target="_blank" rel="noopener">Ayuda</a>
+  </div>
+  <div class="g-tut"><span class="tl">¿Primera vez? </span><button class="lnk" id="tutbtn">IA: 1 video</button><button class="lnk" id="tutbtn2">IA: comparar 2</button></div>
+  <details class="draw" id="draw">
+    <summary>Herramientas de dibujo (línea / ángulo)</summary>
+    <div class="g-tools" id="tools">
+      <button class="btn on" data-tool="line">Línea</button>
+      <button class="btn" data-tool="angle">Ángulo</button>
+      <button class="btn" data-tool="pen">Mano alzada</button>
+      <input type="color" id="col" value="#ffd23f" aria-label="Color de la línea">
+    </div>
+    <div class="g-edit">
+      <button class="btn" id="undo">Deshacer</button>
+      <button class="btn" id="clear">Borrar todo</button>
+      <span class="hintline" id="toolhint">Arrastra para trazar una línea</span>
+    </div>
+  </details>
 </div>
 
-<div class="row">
-  <button class="btn" id="prev" aria-label="Retroceder un fotograma">◀ Fotograma</button>
-  <button class="btn" id="play">Reproducir</button>
-  <button class="btn" id="next" aria-label="Avanzar un fotograma">Fotograma ▶</button>
-  <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Posición de reproducción">
-  <span class="t" id="time">0.00 / 0.00 s</span>
-</div>
-<div class="t" id="rel" hidden></div>
-
-<div class="row">
-  <select id="speed" aria-label="Velocidad de reproducción">
-    <option value="0.1">0.1x</option><option value="0.25" selected>0.25x</option><option value="0.5">0.5x</option><option value="1">1x</option>
-  </select>
-  <select id="fps" aria-label="Fotogramas por segundo">
-    <option value="24">24fps</option><option value="30" selected>30fps</option><option value="60">60fps</option><option value="120">120fps</option><option value="240">240fps</option>
-  </select>
-  <button class="btn" id="cmp">Comparar dos videos</button>
-  <label class="chk" id="linkw" hidden><input type="checkbox" id="link" checked>Sincronizar A y B</label>
-  <span class="anc" hidden><button class="btn" id="anchor" disabled>Sincronizar aquí</button><button class="btn" id="goanchor" disabled>Volver al punto</button></span>
-  <button class="btn" id="snap">Guardar imagen</button>
-  <a class="btn" href="help.html" target="_blank" rel="noopener" style="text-decoration:none">Cómo usar</a>
-</div>
-
+<div id="tutmask" hidden></div><div id="tutcard" hidden role="dialog" aria-live="polite"></div>
 <div id="snapbox" hidden>
-  <p>Mantén presionada la imagen para guardarla o haz una captura de pantalla. Compártela con tu entrenador o tus compañeros para revisar la técnica.</p>
-  <img id="snapimg" alt="Imagen fija con anotaciones">
+  <div class="seg"><button class="btn on" id="m1">Este momento</button><button class="btn" id="m4">4 alrededor</button><label id="ivw" hidden>Intervalo <select id="burstiv"><option value="1">1 fotograma</option><option value="2">2 fotogramas</option><option value="3">3 fotogramas</option><option value="5" selected>5 fotogramas</option><option value="10">10 fotogramas</option><option value="15">15 fotogramas</option><option value="30">30 fotogramas</option></select></label></div>
+  <img id="snapimg" alt="Imagen fija">
+  <p class="hint" id="snaphint">Mantén pulsada la imagen para guardarla.</p>
   <div class="row" style="justify-content:center"><button class="btn on" id="snapshare" hidden>Compartir</button><button class="btn" id="snapclose">Cerrar</button></div>
+  <div id="aipanel" hidden>
+    <div class="row" style="justify-content:center"><select id="aikind"><option>Bateo (swing)</option><option>Lanzamiento (tiro)</option></select><input id="aictx" type="text" maxlength="80" placeholder="Edad, lado, problema"></div>
+    <select id="aipair" hidden><option value="">A y B: sin especificar</option><option value="self">Ambos soy yo (otro día o estado)</option><option value="AM">A soy yo, B es el modelo</option><option value="MA">A es el modelo, B soy yo</option></select>
+    <textarea id="aitext" rows="6" aria-label="Pregunta para la IA"></textarea>
+    <button class="btn on" id="aisend">Copiar pregunta y enviar a app de IA</button>
+    <div id="aimsg" role="status"></div>
+  </div>
 </div>
 
 <script>
@@ -147,17 +227,17 @@ function nrm(p,e){
 
 const panes=[0,1].map(i=>{
   const el=document.createElement('section');el.className='pane';
-  el.innerHTML='<div class="bar"><b>'+'AB'[i]+'</b><label class="btn" aria-label="Elegir video"><span class="lf">Elegir video</span><span class="ls">Elegir</span><input type="file" accept="video/*" multiple hidden></label><span class="name">Ningún video seleccionado</span><span class="nav" hidden><button type="button" class="btn" data-d="-1" aria-label="Video anterior">◀</button><span class="cnt"></span><button type="button" class="btn" data-d="1" aria-label="Video siguiente">▶</button></span></div>'+
+  el.innerHTML='<div class="bar"><b>'+'AB'[i]+'</b><label class="btn" aria-label="Elegir video"><span class="lf">Elegir video</span><span class="ls">Elegir</span><input type="file" accept="video/*" multiple hidden></label><span class="name">Ningún video elegido</span><span class="nav" hidden><button type="button" class="btn" data-d="-1" aria-label="Video anterior">◀</button><span class="cnt"></span><button type="button" class="btn" data-d="1" aria-label="Video siguiente">▶</button></span></div>'+
   '<div class="stage"><video playsinline muted preload="metadata"></video><canvas></canvas><p class="empty">Toca “Elegir video”<br>para abrir un video de tu teléfono</p></div>';
   $('#panes').append(el);
   const p={i,el,v:el.querySelector('video'),c:el.querySelector('canvas'),shapes:[],cur:null,pend:null,list:[],pos:0};
   p.x=p.c.getContext('2d');
-  /* 複数の動画をまとめて選べる。◀ ▶ で前後の動画へすばやく切り替える(切り替えると書き込みは消える) */
+  
   const navUI=()=>{const nv=el.querySelector('.nav'),n=p.list.length,[b0,b1]=nv.querySelectorAll('button');
     nv.hidden=n<2;el.querySelector('.cnt').textContent=(p.pos+1)+'/'+n;b0.disabled=p.pos<=0;b1.disabled=p.pos>=n-1};
   const open=n=>{
     const f=p.list[n];if(!f)return;p.pos=n;
-    if(p.url)URL.revokeObjectURL(p.url);
+    LK=null;if(p.url)URL.revokeObjectURL(p.url);
     p.url=URL.createObjectURL(f);p.off=0;p.pts=null;p.first=true;
     p.v.src=p.url;
     el.querySelector('.name').textContent=f.name;
@@ -166,14 +246,14 @@ const panes=[0,1].map(i=>{
   };
   el.querySelector('input').onchange=e=>{const fs=[...e.target.files];if(!fs.length)return;p.list=fs;open(0);e.target.value=''};
   el.querySelectorAll('.nav button').forEach(bt=>bt.onclick=()=>open(p.pos+(+bt.dataset.d)));
-  const bad=()=>{const m=el.querySelector('.empty');m.innerHTML='No se puede reproducir este video.<br>Es posible que su formato no sea compatible con este dispositivo.';m.hidden=false};
+  const bad=()=>{const m=el.querySelector('.empty');m.innerHTML='No se puede reproducir este video<br>Es posible que tu dispositivo no admita este formato';m.hidden=false};
   p.v.onerror=()=>{if(p.v.getAttribute('src'))bad()};
   p.v.onloadedmetadata=()=>{if(!p.v.videoWidth){bad();return}layout();redraw(p);sync();ancUI()};
-  /* 表示中のコマの時刻(pts)を常に記録する。スライダーや再生停止のあと、任意の時刻から正確に1コマ動かすため */
+  
   p.pts=null;p.first=true;
   p.wait=[];
   const tick=(n,m)=>{p.pts=m.mediaTime;p.stale=false;if(p.first){p.off=m.mediaTime||0;p.first=false}p.wait.splice(0).forEach(f=>f());p.v.requestVideoFrameCallback(tick)};
-  /* シーク直後は、新しいコマの時刻が届くまで「未確定」。コマ送りが自分で指定した位置(tgt)への移動なら、待たずに進める */
+  
   p.v.addEventListener('seeking',()=>{p.stale=true;p.mid=Math.abs(p.v.currentTime-(p.tgt??-1))<1e-3});
   if(p.v.requestVideoFrameCallback)p.v.requestVideoFrameCallback(tick);
   p.v.ontimeupdate=()=>{if(active===i)sync()};
@@ -181,7 +261,7 @@ const panes=[0,1].map(i=>{
   new ResizeObserver(()=>fit(p)).observe(p.c);
   el.addEventListener('pointerdown',()=>setActive(i),true);
   p.c.addEventListener('pointerdown',e=>{
-    if(!p.v.src)return;
+    if(!p.v.src||!$('#draw').open)return;
     p.c.setPointerCapture(e.pointerId);
     const n=nrm(p,e),col=$('#col').value;
     if(tool==='line')p.cur={t:'line',col,p:[n,n]};
@@ -199,7 +279,7 @@ const panes=[0,1].map(i=>{
     if(p.cur.t==='line')p.cur.p[1]=n;else p.cur.p.push(n);
     redraw(p);
   });
-  /* ペインを切り替えるためのタップなどで、長さのない点・線が残らないようにする */
+  
   const tiny=s=>{const R=rect(p),xs=s.p.map(q=>q[0]*R.w),ys=s.p.map(q=>q[1]*R.h);
     return s.p.length<2||Math.max(...xs)-Math.min(...xs)<4&&Math.max(...ys)-Math.min(...ys)<4};
   const end=()=>{if(p.cur){if(!tiny(p.cur))p.shapes.push(p.cur);p.cur=null;redraw(p)}};
@@ -210,7 +290,9 @@ const panes=[0,1].map(i=>{
 
 const fps=()=>+$('#fps').value;
 const T=()=>(compare&&$('#link').checked?panes:[panes[active]]).filter(p=>p.v.getAttribute('src'));
-/* 再生ボタンの表示は、いま「再生」を押したときの動作に合わせる(連動中は、終わった画面を除いた画面の状態で決める) */
+
+const PLAYTXT=['Reproducir','Pausar'];
+function fixPlayW(){const b=$('#play'),keep=b.textContent;b.style.minWidth='';let w=0;PLAYTXT.forEach(t=>{b.textContent=t;w=Math.max(w,b.getBoundingClientRect().width)});b.textContent=keep;b.style.minWidth=Math.ceil(w)+'px';b.style.justifyContent='center'}
 function playLabel(){
   const ts=T(),live=ts.filter(p=>!p.v.ended),g=live.length&&live.length<ts.length?live:ts;
   $('#play').textContent=g.length?(g.every(p=>p.v.paused)?'Reproducir':'Pausar'):(panes[active].v.paused?'Reproducir':'Pausar');
@@ -221,25 +303,35 @@ function setActive(i){
 }
 function sync(){
   const v=panes[active].v,d=v.duration;
-  if(!d||!isFinite(d)){$('#time').textContent='0.00 / 0.00 s';$('#rel').textContent='';return}
+  if(!d||!isFinite(d)){$('#time').textContent='0.00 / 0.00 s';$('#rel').textContent=compare?'Define un punto de sincronía para ver las diferencias':'';return}
   $('#seek').value=v.currentTime/d*1000;
-  let extra='';
-  /* 基準を決めたあとは、基準(0)からのコマ数と秒数も表示する */
+  let extra=compare?'Define un punto de sincronía para ver las diferencias':'';
+  
   if(compare&&panes.every(q=>q.anchor!=null)){
     const rel=v.currentTime-panes[active].anchor,n=Math.round(rel*fps()),a=(n>0?'+':n<0?'−':'±')+Math.abs(n),b=(Math.abs(rel)<0.0005?'±':rel>0?'+':'−')+Math.abs(rel).toFixed(3);
-    extra=('Punto base '+a+' fotogramas ('+b+' s)');
+    extra=('Sinc. '+a+' fotogramas ('+b+' s)');
   }
   $('#time').textContent=v.currentTime.toFixed(2)+' / '+d.toFixed(2)+' s';
   $('#rel').textContent=extra;
 }
-/* 表示中のコマの番号。記録したコマの時刻(pts)から求める */
+
 function curFrame(p,f){
   const v=p.v,o=(p.off||0)%(1/f),last=Math.max(0,Math.round((v.duration||0)*f)-1);
   const fresh=p.pts!=null&&!p.stale&&!v.seeking&&Math.abs(v.currentTime-p.pts)<=1/f+1e-3;
   const cur=fresh?Math.round((p.pts-o)*f):Math.floor((v.currentTime-o)*f+0.25);
   return{o,last,n:Math.min(last,Math.max(0,cur))};
 }
-/* シーク直後は、新しいコマの時刻が届くまで待ってから、全画面分そろって cb を呼ぶ */
+
+
+let LK=null;
+function framesOf(ps,f){
+  const cs=ps.map(p=>curFrame(p,f));
+  if(LK&&ps.length>1&&LK.ps.length===ps.length&&LK.ps.every((p,k)=>p===ps[k])){
+    const bi=Math.max(0,ps.indexOf(panes[active]));
+    cs.forEach((c,k)=>{if(k!==bi)c.n=Math.min(c.last,Math.max(0,cs[bi].n+LK.diff[k]-LK.diff[bi]))});
+  }
+  return cs;
+}
 function settled(ps,cb){
   let left=ps.length;if(!left)return;
   ps.forEach(p=>{
@@ -247,34 +339,42 @@ function settled(ps,cb){
     if(p.stale&&!p.mid&&p.v.requestVideoFrameCallback){p.wait.push(()=>fin());setTimeout(()=>fin(false),150)}else fin();
   });
 }
-/* 全画面を同じコマ数だけ動かす。どれか1つでも動画の端を越えるときは、全部動かさない(差が崩れないように)。
-   コマの「真ん中」を狙ってシークする。n/fps ちょうどを指定すると、時刻の丸め誤差で前のコマに戻ることがあるため */
+
 function goFrames(ps,f,delta){
-  const cs=ps.map(p=>curFrame(p,f));
-  if(cs.some(c=>c.n+delta<0||c.n+delta>c.last))return;
+  const cs=framesOf(ps,f);
+  if(cs.some(c=>c.n+delta<0||c.n+delta>c.last)){if(!LK)return;delta=0}
   ps.forEach((p,k)=>{const c=cs[k];p.tgt=c.o+(c.n+delta+0.5)/f;p.v.currentTime=p.tgt});
 }
 function step(dir){
   const ps=T();ps.forEach(p=>p.v.pause());
   settled(ps,()=>goFrames(ps,fps(),dir));
 }
-/* 「ここを基準に同期」: A・Bそれぞれの、いま止めているコマを基準(0)にする */
+
 function ancUI(){
   const ok=panes.filter(p=>p.v.getAttribute('src')&&p.v.videoWidth>0).length>=2,on=panes.every(p=>p.anchor!=null);
   $('#anchor').disabled=!ok;$('#anchor').classList.toggle('on',on);$('#goanchor').disabled=!on;sync();
 }
 $('#anchor').onclick=()=>{
   const ps=panes.filter(p=>p.v.getAttribute('src')&&p.v.videoWidth>0);if(ps.length<2)return;
-  ps.forEach(p=>p.v.pause());$('#link').checked=true;
+  LK=null;ps.forEach(p=>p.v.pause());$('#link').checked=true;
   settled(ps,()=>{const f=fps();ps.forEach(p=>{const c=curFrame(p,f);p.anchor=c.o+(c.n+0.5)/f;p.tgt=p.anchor;p.v.currentTime=p.anchor});ancUI()});
 };
-$('#goanchor').onclick=()=>panes.forEach(p=>{if(p.anchor!=null){p.v.pause();p.tgt=p.anchor;p.v.currentTime=p.anchor}});
+$('#goanchor').onclick=()=>{LK=null;panes.forEach(p=>{if(p.anchor!=null){p.v.pause();p.tgt=p.anchor;p.v.currentTime=p.anchor}})};
 $('#prev').onclick=()=>step(-1);
 $('#next').onclick=()=>step(1);
 $('#play').onclick=()=>{
   let ts=T();if(!ts.length)return;
   const live=ts.filter(p=>!p.v.ended);if(live.length&&live.length<ts.length)ts=live;
   const go=ts.every(p=>p.v.paused);
+  if(go&&ts.length>1){
+    const f=fps();
+    const valid=()=>LK&&LK.ps.length===ts.length&&LK.ps.every((p,k)=>p===ts[k]);
+    if(ts.every(p=>p.v.ended)){
+      
+      if(valid()){const m=Math.min(...LK.diff);ts.forEach((p,j)=>{const o=(p.off||0)%(1/f);p.tgt=o+(LK.diff[j]-m+0.5)/f;p.v.currentTime=p.tgt})}
+      else{ts.forEach(p=>{const o=(p.off||0)%(1/f);p.tgt=o+0.5/f;p.v.currentTime=p.tgt});LK={ps:ts.slice(),diff:ts.map(()=>0)}}
+    }else if(!valid()){const cs=ts.map(p=>curFrame(p,f));LK={ps:ts.slice(),diff:cs.map(c=>c.n-cs[0].n)}}
+  }
   ts.forEach(p=>{p.v.playbackRate=+$('#speed').value;if(go){const r=p.v.play();if(r&&r.catch)r.catch(()=>{})}else p.v.pause()});
 };
 $('#speed').onchange=()=>panes.forEach(p=>p.v.playbackRate=+$('#speed').value);
@@ -282,10 +382,10 @@ $('#seek').oninput=e=>{
   const ts=T(),base=ts.includes(panes[active])?panes[active]:ts[0];if(!base)return;
   const raw=e.target.value/1000*(base.v.duration||0);
   if(ts.length<2){ts.forEach(p=>{p.v.pause();p.v.currentTime=raw});return}
-  /* 連動中は、操作した画面が動いたコマ数を、もう一方にも同じだけ加える。A・Bの位置の差が、コマ単位で正確に保たれる */
+  
   ts.forEach(p=>p.v.pause());
   settled(ts,()=>{
-    const f=fps(),cs=ts.map(p=>curFrame(p,f)),b=cs[ts.indexOf(base)];
+    const f=fps(),cs=framesOf(ts,f),b=cs[ts.indexOf(base)];
     let d=Math.floor((raw-b.o)*f+1e-3)-b.n;
     d=Math.min(Math.min(...cs.map(c=>c.last-c.n)),Math.max(Math.max(...cs.map(c=>-c.n)),d));
     ts.forEach((p,j)=>{p.tgt=cs[j].o+(cs[j].n+d+0.5)/f;p.v.currentTime=p.tgt});
@@ -295,18 +395,19 @@ $('#cmp').onclick=()=>{
   compare=!compare;
   panes[1].el.hidden=!compare;
   $('#panes').classList.toggle('two',compare);
-  $('#linkw').hidden=!compare;
+  $('#pairrow').hidden=!compare;$('#linkw').hidden=!compare;
   document.querySelector('.anc').hidden=!compare;$('#rel').hidden=!compare;ancUI();
   $('#cmp').classList.toggle('on',compare);
   if(!compare&&active===1)setActive(0);
-  $('#cmp').textContent=compare?'Una sola vista':'Comparar dos videos';
+  $('#cmp').textContent=compare?'Volver a un video':'Comparar';
   layout();
 };
 panes[1].el.hidden=true;
-$('#link').addEventListener('change',playLabel);$('#cmp').addEventListener('click',playLabel);
+$('#link').addEventListener('change',()=>{LK=null;playLabel()});$('#cmp').addEventListener('click',()=>{LK=null;playLabel()});
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{
   tool=b.dataset.tool;
   document.querySelectorAll('[data-tool]').forEach(x=>x.classList.toggle('on',x===b));
+  $('#toolhint').textContent={line:'Arrastra para trazar una línea',angle:'Toca 3 puntos',pen:'Dibuja a mano alzada'}[b.dataset.tool]||'';
   panes.forEach(p=>{p.pend=null;redraw(p)});
 });
 $('#undo').onclick=()=>{
@@ -316,26 +417,179 @@ $('#undo').onclick=()=>{
 };
 $('#clear').onclick=()=>{const p=panes[active];p.shapes=[];p.pend=null;redraw(p)};
 
-function frame(p){
+function frame(p,ws){
   const v=p.v;if(!v.videoWidth)return null;
   const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;
   const x=c.getContext('2d');x.drawImage(v,0,0);
-  draw(x,p.shapes,{x:0,y:0,w:c.width,h:c.height},Math.max(3,c.width/300));
+  if(ws!==false)draw(x,p.shapes,{x:0,y:0,w:c.width,h:c.height},Math.max(3,c.width/300));
   return c;
 }
+
+
+const view={1:null,4:null,5:null};let mode=1,aiPair=false;
 $('#snap').onclick=()=>{
-  const cs=T().map(frame).filter(Boolean);if(!cs.length)return;
+  
+  const ts=T();ts.forEach(p=>p.v.pause());playLabel();
+  settled(ts,snapNow);
+};
+function snapNow(){
+  const ts=T().filter(p=>p.v.videoWidth);
+  const cs=ts.map(frame).filter(Boolean);if(!cs.length)return;
   const h=Math.min(...cs.map(c=>c.height)),ws=cs.map(c=>c.width*h/c.height);
   const o=document.createElement('canvas');o.width=Math.round(ws.reduce((a,b)=>a+b));o.height=h;
   const x=o.getContext('2d');let off=0;
   cs.forEach((c,k)=>{x.drawImage(c,off,0,ws[k],h);off+=ws[k]});
-  const cc=withCredit(o);$('#snapimg').src=cc.toDataURL('image/png');prepShare(cc);
-  $('#snapbox').hidden=false;
+  aiPair=ts.length>1;
+  const cc=withCredit(o);view[1]={cc,url:cc.toDataURL('image/png')};view[4]=null;
+  $('#snapbox').classList.remove('aimode');closeAI();setView(1);$('#snaphint').textContent='Mantén pulsada la imagen para guardarla.';$('#snapbox').hidden=false;$('#snapbox').scrollTop=0;
+}
+function setView(m){
+  mode=m;const v=view[m];$('#snapimg').src=v.url;prepShare(v);
+  $('#m1').classList.toggle('on',m===1);$('#m4').classList.toggle('on',m===4);$('#ivw').hidden=m===1;
+}
+function syncShare(){$('#snapshare').hidden=!shareFile||!$('#aipanel').hidden}
+function closeAI(){$('#aipanel').hidden=true;$('#snapbox').classList.remove('ai');$('#aimsg').textContent='';syncShare()}
+$('#m1').onclick=()=>{if(bursting||!view[1])return;closeAI();setView(1)};
+$('#m4').onclick=async()=>{if(bursting||!view[1])return;closeAI();if(!view[4])await buildFour(false);if(view[4])setView(4)};
+$('#burstiv').onchange=async()=>{
+  if(bursting)return;
+  if(mode===5){view[5]=null;await buildFour(true);if(view[5]){setView(5);aiFill()}return}
+  view[4]=null;if(mode===4){await buildFour(false);if(view[4])setView(4)}
+};
+
+$('#aimain').onclick=()=>{
+  const ts=T().filter(p=>p.v.videoWidth);if(!ts.length)return;
+  T().forEach(p=>p.v.pause());playLabel();
+  settled(T(),async()=>{
+    view[5]=null;await buildFour(true);if(!view[5])return;
+    $('#snapbox').classList.add('aimode','ai');
+    setView(5);aiFill();$('#aipanel').hidden=false;$('#snaphint').textContent='Esta imagen se envía a la IA. Mantén pulsada para guardarla también.';
+    $('#snapbox').hidden=false;$('#snapbox').scrollTop=0;syncShare();
+  });
+};
+$('#snapclose').onclick=()=>{$('#snapbox').hidden=true;$('#snapbox').classList.remove('aimode');closeAI()};
+
+const SH={rel:a=>'Sinc. '+a+' fot.'};
+function capText(){
+  const a=panes[active],v=a.v;
+  if(compare&&panes.every(q=>q.anchor!=null)){const n=Math.round((v.currentTime-a.anchor)*fps());return SH.rel((n>0?'+':n<0?'−':'±')+Math.abs(n))}
+  return v.currentTime.toFixed(2)+' s';
+}
+function shrink(o,maxW){
+  if(o.width<=maxW)return o;
+  const c=document.createElement('canvas'),s=maxW/o.width;c.width=maxW;c.height=Math.round(o.height*s);
+  c.getContext('2d').drawImage(o,0,0,c.width,c.height);return c;
+}
+function buildSheet(sheet){
+  const n=sheet.length;if(!n)return null;
+  const cw=Math.max(480,Math.min(1280,Math.min(...sheet.map(i=>i.c.width))));
+  const ch=Math.round(Math.max(...sheet.map(i=>cw/(i.c.width/i.c.height))));
+  let cols=1,best=1e9;
+  for(let k=1;k<=Math.min(n,4);k++){const r=Math.ceil(n/k),sc=Math.abs(Math.log((k*cw)/(r*ch)/0.9));if(sc<best-1e-9){best=sc;cols=k}}
+  if(n===4&&cw/ch<1)cols=2;
+  const rows=Math.ceil(n/cols),g=Math.round(cw*0.012)+4,W=cols*cw+(cols+1)*g,H=rows*ch+(rows+1)*g;
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d'),fs=Math.round(cw*0.045),font='"Hiragino Sans","Noto Sans JP",system-ui,sans-serif';
+  x.fillStyle='#14201c';x.fillRect(0,0,W,H);
+  sheet.forEach((it,k)=>{
+    const X=g+(k%cols)*(cw+g),Y=g+Math.floor(k/cols)*(ch+g);
+    const s=Math.min(cw/it.c.width,ch/it.c.height),w=Math.round(it.c.width*s),h=Math.round(it.c.height*s);
+    const ox=X+Math.round((cw-w)/2),oy=Y+Math.round((ch-h)/2);
+    x.drawImage(it.c,ox,oy,w,h);
+    const r=Math.round(fs*0.75),cx=ox+r+6,cy=oy+r+6;
+    x.fillStyle='rgba(20,32,28,.85)';x.beginPath();x.arc(cx,cy,r,0,7);x.fill();
+    x.fillStyle='#ffffff';x.font='bold '+fs+'px '+font;x.textAlign='center';x.textBaseline='middle';x.fillText(String(k+1),cx,cy+1);
+    if(it.tags){
+      const ts2=Math.round(fs*0.8),pw2=Math.round(ts2*1.5),ph2=Math.round(ts2*1.4);
+      it.tags.forEach(t=>{const rx=ox+Math.round(t.x*w)-pw2-6,ry=oy+6;
+        x.fillStyle='rgba(255,210,63,.92)';x.fillRect(rx,ry,pw2,ph2);
+        x.fillStyle='#14201c';x.font='bold '+ts2+'px '+font;x.textAlign='center';x.textBaseline='middle';x.fillText(t.l,rx+pw2/2,ry+ph2/2+1);x.textBaseline='alphabetic'});
+    }
+    if(it.cap){
+      x.font=Math.round(fs*0.8)+'px '+font;x.textAlign='left';
+      const tw=x.measureText(it.cap).width,ph=Math.round(fs*1.3),pw=Math.round(tw+fs*0.8);
+      x.fillStyle='rgba(20,32,28,.85)';x.fillRect(ox+6,oy+h-ph-6,pw,ph);
+      x.fillStyle='#ffd23f';x.fillText(it.cap,ox+6+Math.round(fs*0.4),oy+h-6-Math.round(ph/2));
+    }
+  });
+  return c;
+}
+
+let bursting=false;
+const seekWait=ps=>Promise.all(ps.map(p=>new Promise(r=>{const v=p.v;let d=false;const f=()=>{if(d)return;d=true;v.removeEventListener('seeked',f);r()};v.addEventListener('seeked',f);setTimeout(f,1500)})));
+const settleP=ps=>new Promise(r=>settled(ps,r));
+async function buildFour(clean){
+  if(bursting)return;
+  const ts=T().filter(p=>p.v.videoWidth);if(!ts.length)return;
+  const f=fps(),iv=+$('#burstiv').value||5,btn=$(clean?'#aimain':'#m4'),lab=btn.textContent,ctl=['#m1','#m4','#aimain','#snap','#burstiv'].map($);
+  aiPair=ts.length>1;
+  bursting=true;ctl.forEach(e=>e.disabled=true);btn.textContent='Creando…';
+  ts.forEach(p=>p.v.pause());
+  try{
+    await settleP(ts);
+    const cs=framesOf(ts,f),lo=-Math.min(...cs.map(c=>c.n)),hi=Math.min(...cs.map(c=>c.last-c.n));
+    
+    const mb=Math.floor(-lo/iv),ma=Math.floor(hi/iv);
+    let nb=Math.min(2,mb),na=Math.min(ma,3-nb);nb=Math.min(mb,3-na);
+    let ds=[];for(let k=-nb;k<=na;k++)ds.push(k*iv);
+    if(ds.length<2){btn.dataset.keep='1';btn.textContent='Demasiado cerca del final del video';setTimeout(()=>{delete btn.dataset.keep;btn.textContent=lab},1800);return}
+    const items=[];let at=0;
+    for(const d of ds){
+      if(d!==at){goFrames(ts,f,d-at);at=d;await seekWait(ts);await settleP(ts);await new Promise(r=>setTimeout(r,60))}
+      const fr=ts.map(p=>frame(p,!clean)).filter(Boolean);if(!fr.length)continue;
+      const h=Math.min(...fr.map(c=>c.height)),ws=fr.map(c=>c.width*h/c.height);
+      const o=document.createElement('canvas');o.width=Math.round(ws.reduce((a,c)=>a+c));o.height=h;
+      const x=o.getContext('2d');let off=0;fr.forEach((c,k)=>{x.drawImage(c,off,0,ws[k],h);off+=ws[k]});
+      let tags=null;if(fr.length>1){let ac=0;const tw=ws.reduce((a,c)=>a+c);tags=fr.map((c,k)=>{ac+=ws[k];return{x:ac/tw,l:String.fromCharCode(65+k)}})}
+      items.push({c:shrink(o,1600),cap:(d===0?'● ':'')+capText(),tags});
+    }
+    if(at!==0){goFrames(ts,f,-at);await seekWait(ts);await settleP(ts)}
+    const cc=withCredit(buildSheet(items));view[clean?5:4]={cc,items,url:cc.toDataURL('image/png')};
+  }finally{bursting=false;ctl.forEach(e=>e.disabled=false);if(!btn.dataset.keep)btn.textContent=lab}
+}
+
+
+function aiPrompt(){
+  const kind=$('#aikind').value,ctx=$('#aictx').value.trim()||'(sin rellenar)',bat=/Bateo/.test(kind);
+  const rel={'':'No se ha indicado la relación entre A y B (cuál soy yo y cuál es el modelo). Compara los dos.','self':'A y B son ambos mi propia técnica (dos días o estados distintos). Compara qué ha mejorado, qué sigue igual y qué ha empeorado.','AM':'A es mi técnica y B es el modelo con el que quiero compararme.','MA':'A es el modelo y B es mi técnica.'}[$('#aipair').value]||'';
+  const look=aiPair
+    ?'- La imagen muestra 4 momentos en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- En cada momento, la mitad izquierda es A y la derecha es B, cada una con una marca amarilla “A” o “B” arriba a la derecha. Refiérete a ellos como “1-A”, “1-B”, etc.\n- El mismo número es el mismo momento para A y B (ambos videos se movieron el mismo número de fotogramas; si se usa el punto de sincronía, las posiciones respecto a ese punto coinciden). El texto de abajo a la izquierda es el número de fotogramas desde el punto de sincronía (o el tiempo del video).'
+    :'- La imagen muestra 4 momentos consecutivos del mismo video, en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- El texto de abajo a la izquierda de cada momento es el tiempo del video. Refiérete a los momentos por su número, como “momento 2” o “momentos 3 a 4”.\n- El momento marcado con ● es el que detuve y elegí.';
+  const cmp=aiPair
+    ?'1. Comparación: para cada número (1, 2, 3, 4), compara A y B. Para cada número escribe qué es distinto y cuál se ve mejor o peor (por ejemplo “diferencia entre 1-A y 1-B”). Al final resume qué cambió de A a B y qué mejoró o empeoró en general. No mires solo un lado.'
+    :'1. Cambio: describe en orden cómo cambian el timing y la postura a lo largo de los momentos 1, 2, 3 y 4.';
+  const pts=bat
+    ?'inicio del movimiento y transferencia de peso a la pierna de atrás, momento en que aterriza el pie delantero, posición de la carga (postura y manos), hombro delantero y apertura del cuerpo, posición de codos y manos, rotación de cadera, posición de la cabeza, extensión de los brazos cerca del contacto'
+    :'timing de la pierna de apoyo y del paso, recogida y apertura del lado del guante, posición de codo y hombro, inclinación del tronco y apertura del cuerpo, punto de suelta, estabilidad de la cabeza, transferencia de peso';
+  const hint=bat&&/tarde|atras|encima|timing/i.test(ctx)?'\n- El problema tiene que ver con el timing, así que presta especial atención al inicio del movimiento, la transferencia de peso a la pierna de atrás, el aterrizaje del pie delantero y el momento en que empieza el swing.':'';
+  return 'Revisa por favor la técnica de béisbol de las imágenes ('+kind+').\n\n[Contexto]\n'+ctx+'\n'+(aiPair?rel+'\n':'')+'\n[Cómo leer la imagen]\n'+look+'\n\n[Puntos a observar (candidatos)]\n'+pts+'\n- Son solo candidatos. Juzga únicamente por lo que se ve realmente en las imágenes y da prioridad a lo que parezca relacionado con mi problema.'+hint+'\n- Si algo está oculto, es muy pequeño o no se puede juzgar por el ángulo, escribe “no se puede determinar” en lugar de suponer.\n\n[Petición]\n0. Primero, escribe una línea por momento con lo que se ve (dirección del cuerpo, posición de los pies, posición de brazos, manos y '+(bat?'bate':'pelota y guante')+').\n'+cmp+'\n2. Puntos buenos (2 a 3)\n3. Puntos a mejorar (2 a 3). Para cada uno, indica la evidencia: en qué momento y en qué parte del cuerpo (número y parte del cuerpo).\n4. Ejercicios de mejora (3 que se puedan hacer en casa o en el campo, con cómo hacerlos, un número aproximado de repeticiones y precauciones)\n5. Consejos para la próxima vez que grabe (posición de la cámara, ángulo y momento)\n\n[Ten en cuenta]\n- Es una valoración solo con imágenes fijas, así que no seas categórico; usa expresiones como “por lo que se ve” y “podría ser que…”\n- Si en [Contexto] se indica edad o curso, aconseja según la etapa de crecimiento y la capacidad física de esa edad y prioriza la prevención de lesiones (si no se indica, no supongas la edad). No impongas estándares profesionales\n- Si tengo dolor o molestias, dime que no fuerce y que consulte a un médico o entrenador\n- Da una breve explicación de los términos técnicos';
+}
+let aiEdited=false;
+function aiFill(){
+  $('#aipair').hidden=!aiPair;
+  try{const k=localStorage.getItem('fn_aikind'),c=localStorage.getItem('fn_aictx'),q=localStorage.getItem('fn_aipair');if(q!=null)$('#aipair').value=q;if(k)$('#aikind').value=k;if(c!=null&&!$('#aictx').value)$('#aictx').value=c}catch(e){}
+  aiEdited=false;$('#aitext').value=aiPrompt();
+}
+function aiRefresh(){try{localStorage.setItem('fn_aikind',$('#aikind').value);localStorage.setItem('fn_aictx',$('#aictx').value);localStorage.setItem('fn_aipair',$('#aipair').value)}catch(e){}if(!aiEdited)$('#aitext').value=aiPrompt()}
+$('#aikind').onchange=$('#aipair').onchange=$('#aictx').oninput=aiRefresh;
+$('#aitext').oninput=()=>{aiEdited=true};
+async function copyText(t){
+  try{await navigator.clipboard.writeText(t);return true}catch(e){}
+  try{const a=$('#aitext');a.focus();a.select();const ok=document.execCommand('copy');a.setSelectionRange(0,0);return ok}catch(e){return false}
+}
+$('#aisend').onclick=async()=>{
+  const t=$('#aitext').value,m=$('#aimsg');
+  const cp=copyText(t);
+  if(shareFile){
+    try{await navigator.share({files:[shareFile],text:t});m.textContent=(await cp)?'La pregunta está copiada. Pégala junto con la imagen en tu app de IA.':'';return}
+    catch(e){if(e&&e.name==='AbortError'){m.textContent=(await cp)?'La pregunta está copiada.':'';return}}
+  }
+  m.textContent=(await cp)?'La pregunta está copiada. Mantén pulsada la imagen de arriba para guardarla y pega la imagen y la pregunta en tu app de IA.':'Mantén pulsada la pregunta para copiarla, mantén pulsada la imagen de arriba para guardarla y pega ambas en tu app de IA.';
 };
 const APP_HINT='Escanea el código QR para abrir la app';
 const APP_NAME='Form Note';
-/* 保存画像の下に、アプリ名とリンクの帯を付ける（共有された画像からアプリへつなぐため） */
-/* QRコード生成（外部ライブラリなし）。バイトモード・誤り訂正L・バージョン1〜4（URL 78文字まで）。収まらない場合は null */
+
+
 function qrMatrix(text){
   const data=Array.from(new TextEncoder().encode(text));
   const CAP={1:[19,7],2:[34,10],3:[55,15],4:[80,20]};
@@ -458,14 +712,14 @@ function withCredit(o){
   return c;
 }
 let shareFile=null;
-/* 保存画像を、スマホ標準の共有画面（LINE・WhatsAppなど）へ渡す。非対応のブラウザではボタンを出さない */
-function prepShare(c){
-  const b=$('#snapshare');b.hidden=true;shareFile=null;
-  if(!navigator.share||!navigator.canShare)return;
-  c.toBlob(bl=>{
+
+function prepShare(v){
+  shareFile=v.file||null;syncShare();
+  if(v.file||!navigator.share||!navigator.canShare)return;
+  v.cc.toBlob(bl=>{
     if(!bl)return;
     const f=new File([bl],'form-note.png',{type:'image/png'});
-    if(navigator.canShare({files:[f]})){shareFile=f;b.hidden=false}
+    if(navigator.canShare({files:[f]})){v.file=f;if(view[mode]===v){shareFile=f;syncShare()}}
   },'image/png');
 }
 $('#snapshare').onclick=async()=>{
@@ -474,7 +728,7 @@ $('#snapshare').onclick=async()=>{
   try{await navigator.share({files:[shareFile],title:APP_NAME,text:u?APP_NAME+'\n'+u:APP_NAME})}catch(e){}
 };
 $('#snapclose').onclick=()=>$('#snapbox').hidden=true;
-/* Two-pane mode: auto-pick side-by-side or stacked from video aspect ratio and screen size */
+
 function layout(){
   const box=$('#panes');if(!compare)return;
   const W=box.clientWidth,H=box.clientHeight,g=6,bar=44;
@@ -488,6 +742,84 @@ function layout(){
 }
 addEventListener('resize',layout);
 setActive(0);
+fixPlayW();addEventListener('resize',fixPlayW);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fixPlayW);
+
+
+const TUTS={basic:[
+ {t:'Elegir video',m:'Elige un video de swing o de lanzamiento de tu teléfono. El video solo se ve en tu teléfono y no se envía a ningún sitio.',sel:()=>'.pane .bar label',done:()=>panes[0].v.videoWidth>0,need:true,hint:'Elige un video para pasar al siguiente paso'},
+ {t:'Detente en el momento que quieras revisar',m:'Avanza fotograma a fotograma con ◀ ▶ y detente en el momento que quieras revisar (por ejemplo, el instante del contacto). También puedes mover el control deslizante para ir más rápido.',sel:()=>['.g-play','.g-seek']},
+ {t:'Pulsa “Preguntar a IA”',m:'Se crean las 4 imágenes alrededor del momento en que te detuviste y una pregunta para la IA. Pruébalo.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
+ {t:'Tus 4 imágenes están listas',m:'La imagen de arriba es la que se envía a la IA. Muestra los momentos alrededor de donde te detuviste, y ● marca ese momento. Con “Intervalo” cambias la separación entre fotogramas.',sel:()=>'#burstiv'},
+ {t:'Escribe edad, lado y problema',m:'Ejemplos: “10 años, diestro, llego tarde al swing” o “40 años, liga recreativa, diestro, me atrapan por dentro”. Puedes enviar sin escribir nada, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>'#aictx'},
+ {t:'Enviar a una app de IA',m:'Este botón copia la pregunta y abre la pantalla de compartir. Elige tu app de IA, como ChatGPT o Claude, y envía la imagen y la pregunta. Si no aparece en la lista, mantén pulsada la imagen para guardarla y pega la pregunta.',sel:()=>'#aisend',last:true}
+],cmp:[
+ {t:'Usar dos videos',m:'Se muestran dos videos lado a lado para compararlos, por ejemplo tú y un modelo, o tú el mes pasado y hoy.',sel:()=>'#cmp',done:()=>compare,act:()=>$('#cmp').click(),actlabel:'Usar dos videos'},
+ {t:'Elige el video A',m:'Elige para A el video que quieres revisar. Ejemplo: tu swing de hoy. No está decidido cuál eres tú; después puedes indicar la relación entre A y B.',sel:()=>'#panes .pane:nth-of-type(1) .bar label',done:()=>panes[0].v.videoWidth>0,need:true},
+ {t:'Elige el video B',m:'Elige para B el video con el que comparar. Ejemplo: tú el mes pasado, o un video de alguien que quieres tomar como modelo. Es más fácil comparar si ambos muestran el mismo movimiento (batear o lanzar) desde la misma dirección (de frente, de lado, etc.).',sel:()=>'#panes .pane:nth-of-type(2) .bar label',done:()=>panes.every(p=>p.v.videoWidth>0),need:true},
+ {t:'Desactiva “Sincronizar A y B”',m:'Al principio A y B se mueven juntos. Para alinearlos por separado, primero desmarca la casilla.',sel:()=>'#linkw',done:()=>!$('#link').checked,act:()=>{if($('#link').checked)$('#link').click()},actlabel:'Desactivar'},
+ {t:'Alinea A y B en el mismo momento',m:'Toca la pantalla de A para seleccionarla y usa ◀ ▶ de abajo o el control deslizante para llegar al momento que quieres (por ejemplo, el instante del contacto). Luego toca la pantalla de B para seleccionarla y alinea B en el mismo momento del movimiento.',sel:()=>['#panes','.g-play','.g-seek']},
+ {t:'Define el punto de sincronía',m:'Cuando ambos muestren el mismo momento, pulsa “Sincronizar aquí”. Ese será el “punto alineado” y la sincronización se activa automáticamente.',sel:()=>'#anchor',done:()=>panes.every(p=>p.anchor!=null),act:()=>$('#anchor').click(),actlabel:'Definir punto'},
+ {t:'Muévelos juntos',m:'Ahora el avance por fotogramas y el control deslizante mueven ambos videos a la vez. La diferencia se muestra como “Sinc. ±N fotogramas”. “Volver al punto” regresa al punto alineado.',sel:()=>['.g-play','.g-seek']},
+ {t:'Detente en el momento y pulsa “Preguntar a IA”',m:'Detente en el momento sobre el que quieres preguntar y pulsa. Se crea una imagen con A y B lado a lado, con 4 momentos alrededor.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
+ {t:'Elige la relación entre A y B',m:'Elige si A y B son “yo y un modelo” o “ambos yo (antes y después)”. A no siempre está a la izquierda ni B a la derecha, así que esto se refleja en la pregunta.',sel:()=>'#aipair'},
+ {t:'Enviar a una app de IA',m:'Este botón copia la pregunta y abre la pantalla de compartir. Elige tu app de IA y envía la imagen y la pregunta.',sel:()=>'#aisend',last:true}
+]};
+let TUT=TUTS.basic;
+let tutI=-1,tutTm=null;
+function tutRect(sel){
+  const L=[].concat(sel).map(q=>document.querySelector(q)).filter(e=>e&&(e.offsetParent!==null||getComputedStyle(e).position==='fixed'));
+  if(!L.length)return null;
+  L.forEach((e,i)=>{if(i===0){const r=e.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)e.scrollIntoView({block:'center'})}});
+  const R=L.map(e=>e.getBoundingClientRect());
+  const l=Math.min(...R.map(r=>r.left)),t=Math.min(...R.map(r=>r.top)),rt=Math.max(...R.map(r=>r.right)),b=Math.max(...R.map(r=>r.bottom));
+  return{left:l,top:t,width:rt-l,height:b-t};
+}
+const tutLS=v=>{try{localStorage.setItem('fn_tut','1')}catch(e){}};
+function tutPlace(){
+  if(tutI<0)return;const st=TUT[tutI];const mk=$('#tutmask'),cd=$('#tutcard');
+  const q=tutRect(st.sel());
+  if(!q){mk.style.display='none';return}
+  const pad=6;mk.style.display='block';
+  mk.style.left=(q.left-pad)+'px';mk.style.top=(q.top-pad)+'px';mk.style.width=(q.width+pad*2)+'px';mk.style.height=(q.height+pad*2)+'px';
+  const mid=q.top+q.height/2;if(mid>innerHeight/2){cd.style.top='12px';cd.style.bottom='auto'}else{cd.style.bottom='12px';cd.style.top='auto'}
+}
+function tutShow(i){
+  tutI=i;const st=TUT[i];let cd=$('#tutcard');
+  cd.innerHTML='<h3></h3><p></p><div class="row"><span class="grow"></span><button id="tutskip">Cancelar</button><button class="go" id="tutnext"></button></div>';
+  cd.querySelector('h3').textContent=String.fromCharCode(0x2460+i)+' '+st.t;cd.querySelector('p').textContent=st.m;
+  cd.querySelector('.grow').textContent=(i+1)+' / '+TUT.length;
+  const nx=$('#tutnext');nx.textContent=st.last?'Listo':st.act?st.actlabel:'Siguiente';
+  $('#tutskip').onclick=tutEnd;
+  nx.onclick=()=>{if(st.last)return tutEnd();if(st.act&&!(st.done&&st.done()))st.act();else tutNext()};
+  nx.disabled=!!(st.need&&!st.done());
+  tutPlace();
+}
+function tutNext(){
+  let i=tutI+1;
+  while(i<TUT.length&&TUT[i].skipIf&&TUT[i].skipIf())i++;
+  if(i>=TUT.length)return tutEnd();tutShow(i);
+}
+function tutStart(k){
+  TUT=TUTS[k||'basic'];tutLS();$('#tutbn').hidden=true;$('#tutmask').hidden=false;$('#tutcard').hidden=false;
+  let i=0;if(TUT[0].done())i=1;
+  if(!$('#snapbox').hidden){$('#snapbox').hidden=true;closeAI()}
+  tutShow(i);clearInterval(tutTm);
+  tutTm=setInterval(()=>{
+    if(tutI<0)return;const st=TUT[tutI];
+    if(st.done&&st.done()&&!st.last){tutNext();return}
+    const nx=$('#tutnext');if(nx&&st.need)nx.disabled=!st.done();
+    tutPlace();
+  },350);
+}
+function tutEnd(){
+  clearInterval(tutTm);tutI=-1;$('#tutmask').hidden=true;$('#tutcard').hidden=true;
+}
+$('#tutbtn').onclick=()=>tutStart('basic');
+$('#tutbtn2').onclick=()=>tutStart('cmp');
+$('#tutgo').onclick=()=>tutStart('basic');
+$('#tutno').onclick=()=>{tutLS();$('#tutbn').hidden=true};
+addEventListener('resize',tutPlace);
+try{if(!localStorage.getItem('fn_tut'))$('#tutbn').hidden=false}catch(e){$('#tutbn').hidden=false}
 </script>
 </body>
 </html>
