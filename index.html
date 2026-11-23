@@ -115,6 +115,8 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
 #tutbn span{flex:1}.nb{white-space:normal}#tutbn button{min-height:44px;border-radius:8px;border:1px solid #fff;background:transparent;color:#fff;font:inherit;padding:0 12px;cursor:pointer}
 #tutbn[hidden],#tutmask[hidden],#tutcard[hidden]{display:none!important}
 #tutbn button.go{background:#fff;color:#0f6b4b;font-weight:700}
+.g-sup{text-align:center}.g-sup[hidden]{display:none}.g-sup .lnk{display:inline-block;min-height:44px}
+@media (orientation:landscape) and (max-height:560px){.g-sup{display:none}}
 </style>
 </head>
 <body>
@@ -165,6 +167,7 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
       <span class="hintline" id="toolhint">Arrastra para trazar una línea</span>
     </div>
   </details>
+  <div class="g-sup" hidden><a class="lnk" id="supportlink" href="#" target="_blank" rel="noopener">☕ Apoya esta herramienta gratuita</a></div>
 </div>
 
 <div id="tutmask" hidden></div><div id="tutcard" hidden role="dialog" aria-live="polite"></div>
@@ -752,6 +755,9 @@ setActive(0);
 fixPlayW();addEventListener('resize',fixPlayW);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fixPlayW);
 
 
+
+const SUPPORT_URL='https://buymeacoffee.com/formnote';
+if(SUPPORT_URL){$('#supportlink').href=SUPPORT_URL;document.querySelector('.g-sup').hidden=false}
 const TUTS={basic:[
  {t:'Elegir video',m:'Elige un video de swing o de lanzamiento de tu teléfono. El video solo se ve en tu teléfono y no se envía a ningún sitio.',sel:()=>'.pane .bar label',done:()=>panes[0].v.videoWidth>0,need:true,hint:'Elige un video para pasar al siguiente paso'},
  {t:'Detente en el momento que quieras revisar',m:'Avanza fotograma a fotograma con ◀ ▶ y detente en el momento que quieras revisar (por ejemplo, el instante del contacto). También puedes mover el control deslizante para ir más rápido.',sel:()=>['.g-play','.g-seek']},
