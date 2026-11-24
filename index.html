@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Form Note</title>
+<title>FormNote</title>
 <meta name="description" content="Una herramienta gratuita para revisar la técnica de béisbol en video: fotograma a fotograma, medición de ángulos y comparación de dos videos. Los videos se quedan en tu dispositivo.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Form Note">
+<meta property="og:title" content="FormNote">
 <meta property="og:description" content="Una herramienta gratuita para revisar la técnica de béisbol en video: fotograma a fotograma, medición de ángulos y comparación de dos videos. Los videos se quedan en tu dispositivo.">
 <meta property="og:url" content="https://yatti3g-byte.github.io/form-note-es/">
 <meta property="og:image" content="https://yatti3g-byte.github.io/form-note-es/og.jpg">
@@ -120,7 +120,7 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
 </style>
 </head>
 <body>
-<div id="tutbn" hidden><span><span class="nb">¿Primera vez? </span><span class="nb">Te guiamos para consultar </span><span class="nb">a la IA.</span></span><button class="go" id="tutgo">Ver guía</button><button id="tutno" aria-label="Cerrar">×</button></div>
+<div id="tutbn" hidden><span><span class="nb">¿Primera vez? </span><span class="nb">Te guiamos para comparar dos videos y consultar </span><span class="nb">a la IA.</span></span><button class="go" id="tutgo">Ver guía</button><button id="tutno" aria-label="Cerrar">×</button></div>
 <div class="panes" id="panes"></div>
 
 <div class="ctl">
@@ -152,7 +152,7 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
     <button class="btn" id="snap">Compartir</button>
     <a class="lnk" href="help.html" target="_blank" rel="noopener">Ayuda</a>
   </div>
-  <div class="g-tut"><span class="tl">¿Primera vez? </span><button class="lnk" id="tutbtn">IA: 1 video</button><button class="lnk" id="tutbtn2">IA: comparar 2</button></div>
+  <div class="g-tut"><span class="tl">¿Primera vez? </span><button class="lnk" id="tutbtn2">IA: comparar 2</button><button class="lnk" id="tutbtn">IA: 1 video</button></div>
   <details class="draw" id="draw">
     <summary>Herramientas de dibujo (línea / ángulo)</summary>
     <div class="g-tools" id="tools">
@@ -232,7 +232,7 @@ function nrm(p,e){
 const panes=[0,1].map(i=>{
   const el=document.createElement('section');el.className='pane';
   el.innerHTML='<div class="bar"><b>'+'AB'[i]+'</b><label class="btn" aria-label="Elegir video"><span class="lf">Elegir video</span><span class="ls">Elegir</span><input type="file" accept="video/*" multiple hidden></label><span class="name">Ningún video elegido</span><span class="nav" hidden><button type="button" class="btn" data-d="-1" aria-label="Video anterior">◀</button><span class="cnt"></span><button type="button" class="btn" data-d="1" aria-label="Video siguiente">▶</button></span></div>'+
-  '<div class="stage"><video playsinline muted preload="metadata"></video><canvas></canvas><p class="empty">Toca “Elegir video”<br>para abrir un video de tu teléfono</p></div>';
+  '<div class="stage"><video playsinline muted preload="metadata"></video><canvas></canvas><p class="empty">Toca “Elegir video”<br>para abrir un video de tu teléfono'+(i===0?'<br>Elige dos videos a la vez para compararlos lado a lado':'')+'</p></div>';
   $('#panes').append(el);
   const p={i,el,v:el.querySelector('video'),c:el.querySelector('canvas'),shapes:[],cur:null,pend:null,list:[],pos:0};
   p.x=p.c.getContext('2d');
@@ -248,7 +248,13 @@ const panes=[0,1].map(i=>{
     el.querySelector('.empty').hidden=true;
     p.shapes=[];p.pend=null;p.cur=null;p.anchor=null;setActive(i);navUI();ancUI();
   };
-  el.querySelector('input').onchange=e=>{const fs=[...e.target.files];if(!fs.length)return;p.list=fs;open(0);e.target.value=''};
+  p.open=open;
+  el.querySelector('input').onchange=e=>{const fs=[...e.target.files];e.target.value='';if(!fs.length)return;
+    
+    if(fs.length>=2&&(!compare||!panes.some(q=>q.v.getAttribute('src')))){
+      if(!compare)setCompare(true);
+      panes.forEach(q=>q.list=fs);panes[0].open(0);panes[1].open(1);setActive(0);return}
+    p.list=fs;open(0)};
   el.querySelectorAll('.nav button').forEach(bt=>bt.onclick=()=>open(p.pos+(+bt.dataset.d)));
   const bad=()=>{const m=el.querySelector('.empty');m.innerHTML='No se puede reproducir este video<br>Es posible que tu dispositivo no admita este formato';m.hidden=false};
   p.v.onerror=()=>{if(p.v.getAttribute('src'))bad()};
@@ -397,8 +403,10 @@ $('#seek').oninput=e=>{
     ts.forEach((p,j)=>{p.tgt=cs[j].o+(cs[j].n+d+0.5)/f;p.v.currentTime=p.tgt});
   });
 };
-$('#cmp').onclick=()=>{
-  compare=!compare;
+function setCompare(on){
+  compare=on;LK=null;
+  
+  if(compare)$('#link').checked=false;
   panes[1].el.hidden=!compare;
   $('#panes').classList.toggle('two',compare);
   $('#pairrow').hidden=!compare;$('#linkw').hidden=!compare;
@@ -406,8 +414,9 @@ $('#cmp').onclick=()=>{
   $('#cmp').classList.toggle('on',compare);
   if(!compare&&active===1)setActive(0);
   $('#cmp').textContent=compare?'Volver a un video':'Comparar';
-  layout();
-};
+  layout();playLabel();
+}
+$('#cmp').onclick=()=>setCompare(!compare);
 panes[1].el.hidden=true;
 $('#link').addEventListener('change',()=>{LK=null;playLabel()});$('#cmp').addEventListener('click',()=>{LK=null;playLabel()});
 document.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{
@@ -563,16 +572,16 @@ function aiPrompt(){
   const kind=$('#aikind').value,ctx=$('#aictx').value.trim()||'(sin rellenar)',bat=/Bateo/.test(kind);
   const rel={'':'No se ha indicado la relación entre A y B (cuál soy yo y cuál es el modelo). Compara los dos.','self':'A y B son videos míos grabados en distintos días o en diferentes condiciones. Compara qué ha mejorado, qué sigue igual y qué ha empeorado.','AM':'A es mi técnica y B es el modelo con el que quiero compararme.','MA':'A es el modelo y B es mi técnica.'}[$('#aipair').value]||'';
   const look=aiPair
-    ?'- La imagen muestra 4 momentos en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- En cada momento, la mitad izquierda es A y la derecha es B, cada una con una marca amarilla “A” o “B” arriba a la derecha. Refiérete a ellos como “1-A”, “1-B”, etc.\n- El mismo número es el mismo momento para A y B (ambos videos se movieron el mismo número de fotogramas; si se usa el punto de sincronía, las posiciones respecto a ese punto coinciden). El texto de abajo a la izquierda es el número de fotogramas desde el punto de sincronía (o el tiempo del video).'
+    ?'- La imagen muestra 4 momentos en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- En cada momento, la mitad izquierda es A y la derecha es B, cada una con una marca amarilla “A” o “B” arriba a la derecha. Refiérete a ellos como “1-A”, “1-B”, etc.\n- El mismo número es el mismo momento para A y B (ambos videos se movieron el mismo número de fotogramas; si se usa el punto de sincronía, alineé el mismo momento en los dos videos y lo puse como 0, y el texto de abajo a la izquierda es el número de fotogramas desde ese punto; si no se usa, el texto es el tiempo del video).\n- Aunque el número sea el mismo, A y B pueden no estar en la misma fase del movimiento. Separa las diferencias de postura de las diferencias de velocidad y de momento.'
     :'- La imagen muestra 4 momentos consecutivos del mismo video, en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- El texto de abajo a la izquierda de cada momento es el tiempo del video. Refiérete a los momentos por su número, como “momento 2” o “momentos 3 a 4”.\n- El momento marcado con ● es el que detuve y elegí.';
   const cmp=aiPair
-    ?'1. Comparación: para cada número (1, 2, 3, 4), compara A y B. Para cada número escribe qué es distinto (por ejemplo “diferencia entre 1-A y 1-B”) y qué podría significar para el swing o el lanzamiento. Al final resume qué cambió de A a B y qué parece haber mejorado o empeorado en general. No mires solo un lado.'
+    ?'1. Comparación: para cada número (1, 2, 3, 4), compara A y B. Para cada número escribe qué es distinto (por ejemplo “diferencia entre 1-A y 1-B”) y qué podría significar para el swing o el lanzamiento. Si no puedes saber cuál es mejor, vale decir “sin diferencia clara”. Al final resume qué cambió de A a B y qué parece haber mejorado o empeorado en general. No mires solo un lado.'
     :'1. Cambio: describe en orden cómo cambian el timing y la postura a lo largo de los momentos 1, 2, 3 y 4.';
   const pts=bat
     ?'inicio del movimiento y transferencia de peso a la pierna de atrás, momento en que aterriza el pie delantero, posición de la carga (postura y manos), hombro delantero y apertura del cuerpo, posición de codos y manos, rotación de cadera, posición de la cabeza, extensión de los brazos cerca del contacto'
     :'timing de la pierna de apoyo y del paso, recogida y apertura del lado del guante, posición de codo y hombro, inclinación del tronco y apertura del cuerpo, punto de suelta, estabilidad de la cabeza, transferencia de peso';
   const hint=bat&&/tarde|atras|encima|timing/i.test(ctx)?'\n- El problema tiene que ver con el timing, así que presta especial atención al inicio del movimiento, la transferencia de peso a la pierna de atrás, el aterrizaje del pie delantero y el momento en que empieza el swing.':'';
-  return 'Analiza la mecánica del jugador a partir de las imágenes ('+kind+').\n\n[Contexto]\n'+ctx+'\n'+(aiPair?rel+'\n':'')+'\n[Cómo leer la imagen]\n'+look+'\n\n[Puntos a observar (candidatos)]\n'+pts+'\n- Son solo candidatos. Juzga únicamente por lo que se ve realmente en las imágenes y da prioridad a lo que parezca relacionado con mi problema.'+hint+'\n- Si algo está oculto, es muy pequeño o no se puede juzgar por el ángulo, escribe “no se puede determinar” en lugar de suponer.\n\n[Petición]\n0. Primero, escribe una línea por momento con lo que se ve (dirección del cuerpo, posición de los pies, posición de brazos, manos y '+(bat?'bate':'pelota y guante')+').\n'+cmp+'\n2. Puntos buenos (2 a 3)\n3. Puntos a mejorar (2 a 3). Para cada uno, indica la evidencia: en qué momento y en qué parte del cuerpo (número y parte del cuerpo).\n4. Ejercicios de mejora (3 que se puedan hacer en casa o en el campo, con cómo hacerlos, un número aproximado de repeticiones y precauciones)\n5. Consejos para la próxima vez que grabe (posición de la cámara, ángulo y momento)\n\n[Ten en cuenta]\n- Es una valoración solo con imágenes fijas, así que no seas categórico; usa expresiones como “por lo que se ve” y “podría ser que…”\n- Si en [Contexto] se indica edad o curso, aconseja según la etapa de crecimiento y la capacidad física de esa edad y prioriza la prevención de lesiones (si no se indica, no supongas la edad). No impongas estándares profesionales\n- Si tengo dolor o molestias, dime que no fuerce y que consulte a un médico o entrenador\n- Da una breve explicación de los términos técnicos';
+  return 'Analiza la mecánica del jugador a partir de las imágenes ('+kind+').\n\n[Contexto]\n'+ctx+'\n'+(aiPair?rel+'\n':'')+'\n[Cómo leer la imagen]\n'+look+'\n\n[Puntos a observar (candidatos)]\n'+pts+'\n- Son solo candidatos. Juzga únicamente por lo que se ve realmente en las imágenes y da prioridad a lo que parezca relacionado con mi problema. El traspaso de peso, la velocidad de giro y el momento exacto del apoyo del pie son difíciles de juzgar con imágenes fijas, así que indica ese límite.'+hint+'\n- Si algo está oculto, es muy pequeño o no se puede juzgar por el ángulo, escribe “no se puede determinar” en lugar de suponer.\n\n[Petición]\n0. Primero, escribe una línea por momento con lo que se ve (dirección del cuerpo, posición de los pies, posición de brazos, manos y '+(bat?'bate':'pelota y guante')+').\n'+cmp+'\n2. Puntos buenos (2 a 3)\n3. Puntos a mejorar (2 a 3). Para cada uno, indica la evidencia: en qué momento y en qué parte del cuerpo (número y parte del cuerpo).\n4. Ejercicios de mejora (hasta 3 que se puedan hacer en casa o en el campo, con cómo hacerlos, un número aproximado de repeticiones y precauciones; si la causa no está clara, no fuerces ejercicios y dime qué comprobar primero)\n5. Consejos para la próxima vez que grabe (posición de la cámara, ángulo, altura, velocidad de grabación (fps) y momento)\n\n[Ten en cuenta]\n- Es una valoración solo con imágenes fijas, así que no seas categórico; usa expresiones como “por lo que se ve” y “podría ser que…”\n- Si en [Contexto] se indica edad o curso, aconseja según la etapa de crecimiento y la capacidad física de esa edad y prioriza la prevención de lesiones (si no se indica, no supongas la edad). No impongas estándares profesionales\n- Si tengo dolor o molestias, dime que no fuerce y que consulte a un médico o entrenador\n- Separa con claridad lo que observas, cómo lo interpretas y lo que propones\n- Si en [Contexto] hay una preocupación, usa como criterio principal si algo ayuda con ella. Las imágenes fijas no muestran resultados como la calidad del contacto, la calidad del batazo o el control\n- No fuerces puntos de mejora; aconséjame mantener los buenos movimientos\n- Si algo no se puede saber solo con las imágenes, indica qué falta\n- Da una breve explicación de los términos técnicos';
 }
 let aiEdited=false;
 function aiFill(){
@@ -597,7 +606,7 @@ $('#aisend').onclick=async()=>{
   m.textContent=(await cp)?'La pregunta está copiada. Mantén pulsada la imagen de arriba para guardarla y pega la imagen y la pregunta en tu app de IA.':'Mantén pulsada la pregunta para copiarla, mantén pulsada la imagen de arriba para guardarla y pega ambas en tu app de IA.';
 };
 const APP_HINT='Escanea el código QR para abrir la app';
-const APP_NAME='Form Note';
+const APP_NAME='FormNote';
 
 
 function qrMatrix(text){
@@ -766,15 +775,12 @@ const TUTS={basic:[
  {t:'Escribe edad, lado y problema',m:'Ejemplos: “10 años, diestro, llego tarde al swing” o “40 años, liga recreativa, diestro, me atrapan por dentro”. Puedes enviar sin escribir nada, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>'#aictx'},
  {t:'Enviar a una app de IA',m:'Este botón copia la pregunta y abre la pantalla de compartir. Elige tu app de IA, como ChatGPT o Claude, y envía la imagen y la pregunta. Si no aparece en la lista, mantén pulsada la imagen para guardarla y pega la pregunta.',sel:()=>'#aisend',last:true}
 ],cmp:[
- {t:'Usar dos videos',m:'Se muestran dos videos lado a lado para compararlos, por ejemplo tú y un modelo, o tú el mes pasado y hoy.',sel:()=>'#cmp',done:()=>compare,act:()=>$('#cmp').click(),actlabel:'Usar dos videos'},
- {t:'Elige el video A',m:'Elige para A el video que quieres revisar. Ejemplo: tu swing de hoy. No está decidido cuál eres tú; después puedes indicar la relación entre A y B.',sel:()=>'#panes .pane:nth-of-type(1) .bar label',done:()=>panes[0].v.videoWidth>0,need:true},
- {t:'Elige el video B',m:'Elige para B el video con el que comparar. Ejemplo: tú el mes pasado, o un video de alguien que quieres tomar como modelo. Es más fácil comparar si ambos muestran el mismo movimiento (batear o lanzar) desde la misma dirección (de frente, de lado, etc.).',sel:()=>'#panes .pane:nth-of-type(2) .bar label',done:()=>panes.every(p=>p.v.videoWidth>0),need:true},
- {t:'Desactiva “Sincronizar A y B”',m:'Al principio A y B se mueven juntos. Para alinearlos por separado, primero desmarca la casilla.',sel:()=>'#linkw',done:()=>!$('#link').checked,act:()=>{if($('#link').checked)$('#link').click()},actlabel:'Desactivar'},
- {t:'Alinea A y B en el mismo momento',m:'Toca la pantalla de A para seleccionarla y usa ◀ ▶ de abajo o el control deslizante para llegar al momento que quieres (por ejemplo, el instante del contacto). Luego toca la pantalla de B para seleccionarla y alinea B en el mismo momento del movimiento.',sel:()=>['#panes','.g-play','.g-seek']},
+ {t:'Elige dos videos para comparar',m:'Toca “Elegir video” y selecciona a la vez los dos videos que quieres comparar. El primero será A y el segundo B, y la pantalla cambia sola a dos paneles. Por ejemplo, tú y un modelo, o tú el mes pasado y hoy. Es más fácil comparar si ambos muestran el mismo movimiento (batear o lanzar) desde la misma dirección (de frente, de lado, etc.).',sel:()=>'#panes .pane:nth-of-type(1) .bar label',done:()=>compare&&panes.every(p=>p.v.videoWidth>0),need:true,hint:'Elige dos videos para pasar al siguiente paso'},
+ {t:'Alinea A y B en el mismo momento',m:'Al principio, A y B se mueven por separado. Toca la pantalla de A para seleccionarla y usa ◀ ▶ de abajo o el control deslizante para llegar al momento que quieres (por ejemplo, el instante del contacto). Luego toca la pantalla de B para seleccionarla y alinea B en el mismo momento del movimiento.',sel:()=>['#panes','.g-play','.g-seek']},
  {t:'Define el punto de sincronía',m:'Cuando ambos muestren el mismo momento, pulsa “Sincronizar aquí”. Ese será el “punto alineado” y la sincronización se activa automáticamente.',sel:()=>'#anchor',done:()=>panes.every(p=>p.anchor!=null),act:()=>$('#anchor').click(),actlabel:'Definir punto'},
  {t:'Muévelos juntos',m:'Ahora el avance por fotogramas y el control deslizante mueven ambos videos a la vez. La diferencia se muestra como “Sinc. ±N fotogramas”. “Volver al punto” regresa al punto alineado.',sel:()=>['.g-play','.g-seek']},
  {t:'Detente en el momento y pulsa “Preguntar a IA”',m:'Detente en el momento sobre el que quieres preguntar y pulsa. Se crea una imagen con A y B lado a lado, con 4 momentos alrededor.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
- {t:'Elige la relación entre A y B',m:'Elige si A y B son “yo y un modelo” o “ambos yo (antes y después)”. A no siempre está a la izquierda ni B a la derecha, así que esto se refleja en la pregunta.',sel:()=>'#aipair'},
+ {t:'Elige la relación entre A y B y escribe tu problema',m:'Elige si A y B son “yo y un modelo” o “ambos yo (antes y después)”. A no siempre está a la izquierda ni B a la derecha, así que esto se refleja en la pregunta. Escribe también tu edad, el lado con el que bateas o lanzas y tu problema. Ejemplo: “10 años, derecho, llego tarde al swing”. Puedes enviar sin escribir, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>['#aipair','#aictx']},
  {t:'Enviar a una app de IA',m:'Este botón copia la pregunta y abre la pantalla de compartir. Elige tu app de IA y envía la imagen y la pregunta.',sel:()=>'#aisend',last:true}
 ]};
 let TUT=TUTS.basic;
@@ -829,7 +835,7 @@ function tutEnd(){
 }
 $('#tutbtn').onclick=()=>tutStart('basic');
 $('#tutbtn2').onclick=()=>tutStart('cmp');
-$('#tutgo').onclick=()=>tutStart('basic');
+$('#tutgo').onclick=()=>tutStart('cmp');
 $('#tutno').onclick=()=>{tutLS();$('#tutbn').hidden=true};
 addEventListener('resize',tutPlace);
 try{if(!localStorage.getItem('fn_tut'))$('#tutbn').hidden=false}catch(e){$('#tutbn').hidden=false}
