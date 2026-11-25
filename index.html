@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-419">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -12,7 +12,7 @@
 <meta property="og:image" content="https://yatti3g-byte.github.io/form-note-es/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:locale" content="es_ES">
+<meta property="og:locale" content="es_419">
 <meta name="twitter:card" content="summary_large_image">
 <style>
 :root{--bg:#eef2ee;--panel:#fff;--line:#c9d4cc;--ink:#14201c;--mute:#5b6d64;--acc:#0f6b4a;--accInk:#fff;
@@ -125,9 +125,9 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
 
 <div class="ctl">
   <div class="g-play">
-    <button class="btn" id="prev" aria-label="Retroceder un fotograma">◀ 1 fot.</button>
+    <button class="btn" id="prev" aria-label="Retroceder un fotograma">◀ 1 fotograma</button>
     <button class="btn" id="play">Reproducir</button>
-    <button class="btn" id="next" aria-label="Avanzar un fotograma">1 fot. ▶</button>
+    <button class="btn" id="next" aria-label="Avanzar un fotograma">1 fotograma ▶</button>
   </div>
   <div class="g-seek">
     <input type="range" id="seek" min="0" max="1000" value="0" aria-label="Posición de reproducción">
@@ -177,8 +177,8 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
   <p class="hint" id="snaphint">Mantén pulsada la imagen para guardarla.</p>
   <div class="row" style="justify-content:center"><button class="btn on" id="snapshare" hidden>Compartir</button><button class="btn" id="snapclose">Cerrar</button></div>
   <div id="aipanel" hidden>
-    <div class="row" style="justify-content:center"><select id="aikind"><option>Bateo</option><option>Lanzamiento</option></select><input id="aictx" type="text" maxlength="80" placeholder="Edad, mano con la que bateas/lanzas, qué mejorar"></div>
-    <select id="aipair" hidden><option value="">A y B: sin especificar</option><option value="self">Ambos videos son míos (otro día o estado)</option><option value="AM">A soy yo, B es el modelo</option><option value="MA">A es el modelo, B soy yo</option></select>
+    <div class="row" style="justify-content:center"><select id="aikind"><option>Bateo</option><option>Pitcheo</option></select><input id="aictx" type="text" maxlength="80" placeholder="Edad, mano con la que bateas/lanzas, qué mejorar"></div>
+    <select id="aipair" hidden><option value="">A y B: sin especificar</option><option value="self">Ambos videos son míos (otro día o estado)</option><option value="AM">A soy yo, B es el jugador de referencia</option><option value="MA">A es el jugador de referencia, B soy yo</option></select>
     <textarea id="aitext" rows="6" aria-label="Pregunta para la IA"></textarea>
     <button class="btn on" id="aisend">Copiar pregunta y enviar a app de IA</button>
     <div id="aimsg" role="status"></div>
@@ -253,7 +253,8 @@ const panes=[0,1].map(i=>{
     
     if(fs.length>=2&&(!compare||!panes.some(q=>q.v.getAttribute('src')))){
       if(!compare)setCompare(true);
-      panes.forEach(q=>q.list=fs);panes[0].open(0);panes[1].open(1);setActive(0);return}
+      
+      panes[0].list=[fs[0]];panes[1].list=[fs[1]];panes[0].open(0);panes[1].open(0);setActive(0);return}
     p.list=fs;open(0)};
   el.querySelectorAll('.nav button').forEach(bt=>bt.onclick=()=>open(p.pos+(+bt.dataset.d)));
   const bad=()=>{const m=el.querySelector('.empty');m.innerHTML='No se puede reproducir este video<br>Es posible que tu dispositivo no admita este formato';m.hidden=false};
@@ -484,7 +485,7 @@ $('#aimain').onclick=()=>{
 };
 $('#snapclose').onclick=()=>{$('#snapbox').hidden=true;$('#snapbox').classList.remove('aimode');closeAI()};
 
-const SH={rel:a=>'Sinc. '+a+' fot.'};
+const SH={rel:a=>'Sinc. '+a+' fotogramas'};
 function capText(){
   const a=panes[active],v=a.v;
   if(compare&&panes.every(q=>q.anchor!=null)){const n=Math.round((v.currentTime-a.anchor)*fps());return SH.rel((n>0?'+':n<0?'−':'±')+Math.abs(n))}
@@ -570,13 +571,16 @@ async function buildFour(clean){
 
 function aiPrompt(){
   const kind=$('#aikind').value,ctx=$('#aictx').value.trim()||'(sin rellenar)',bat=/Bateo/.test(kind);
-  const rel={'':'No se ha indicado la relación entre A y B (cuál soy yo y cuál es el modelo). Compara los dos.','self':'A y B son videos míos grabados en distintos días o en diferentes condiciones. Compara qué ha mejorado, qué sigue igual y qué ha empeorado.','AM':'A es mi técnica y B es el modelo con el que quiero compararme.','MA':'A es el modelo y B es mi técnica.'}[$('#aipair').value]||'';
-  const look=aiPair
-    ?'- La imagen muestra 4 momentos en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- En cada momento, la mitad izquierda es A y la derecha es B, cada una con una marca amarilla “A” o “B” arriba a la derecha. Refiérete a ellos como “1-A”, “1-B”, etc.\n- El mismo número es el mismo momento para A y B (ambos videos se movieron el mismo número de fotogramas; si se usa el punto de sincronía, alineé el mismo momento en los dos videos y lo puse como 0, y el texto de abajo a la izquierda es el número de fotogramas desde ese punto; si no se usa, el texto es el tiempo del video).\n- Aunque el número sea el mismo, A y B pueden no estar en la misma fase del movimiento. Separa las diferencias de postura de las diferencias de velocidad y de momento.'
-    :'- La imagen muestra 4 momentos consecutivos del mismo video, en orden, numerados del 1 al 4. Un número mayor es más tarde en el tiempo.\n- El texto de abajo a la izquierda de cada momento es el tiempo del video. Refiérete a los momentos por su número, como “momento 2” o “momentos 3 a 4”.\n- El momento marcado con ● es el que detuve y elegí.';
-  const cmp=aiPair
-    ?'1. Comparación: para cada número (1, 2, 3, 4), compara A y B. Para cada número escribe qué es distinto (por ejemplo “diferencia entre 1-A y 1-B”) y qué podría significar para el swing o el lanzamiento. Si no puedes saber cuál es mejor, vale decir “sin diferencia clara”. Al final resume qué cambió de A a B y qué parece haber mejorado o empeorado en general. No mires solo un lado.'
-    :'1. Cambio: describe en orden cómo cambian el timing y la postura a lo largo de los momentos 1, 2, 3 y 4.';
+  const rel={'':'No se ha indicado la relación entre A y B (cuál soy yo y cuál es el jugador de referencia). Compara los dos.','self':'A y B son videos míos grabados en distintos días o en diferentes condiciones. Compara qué ha mejorado, qué sigue igual y qué ha empeorado.','AM':'A es mi técnica y B es un jugador de referencia con el que quiero compararme.','MA':'A es un jugador de referencia y B es mi técnica.'}[$('#aipair').value]||'';
+  const it=view[5]||view[4],n=it&&it.items&&it.items.length>1?it.items.length:4,sq=Array.from({length:n},(_,i)=>i+1);
+  const sub=t=>t.replace(/\{N\}/g,n).replace(/\{SEQ\}/g,sq.join('→')).replace(/\{LST\}/g,sq.join(', '));
+  const look0=aiPair
+    ?'- La imagen muestra {N} momentos en orden, numerados del 1 al {N}. Un número mayor es más tarde en el tiempo.\n- En cada momento, la mitad izquierda es A y la derecha es B, cada una con una marca amarilla “A” o “B” arriba a la derecha. Refiérete a ellos como “1-A”, “1-B”, etc.\n- El mismo número es el mismo momento para A y B (ambos videos se movieron el mismo número de fotogramas; si se usa el punto de sincronía, alineé el mismo momento en los dos videos y lo puse como 0, y el texto de abajo a la izquierda es el número de fotogramas desde ese punto; si no se usa, el texto es el tiempo del video).\n- Aunque el número sea el mismo, A y B pueden no estar en la misma fase del movimiento. Separa las diferencias de postura de las diferencias de velocidad y de momento.'
+    :'- La imagen muestra {N} momentos consecutivos del mismo video, en orden, numerados del 1 al {N}. Un número mayor es más tarde en el tiempo.\n- El texto de abajo a la izquierda de cada momento es el tiempo del video. Refiérete a los momentos por su número, como “momento 2” o “momentos 3 a 4”.\n- El momento marcado con ● es el que detuve y elegí.';
+  const cmp0=aiPair
+    ?'1. Comparación: para cada número ({LST}), compara A y B. Para cada número escribe qué es distinto (por ejemplo “diferencia entre 1-A y 1-B”) y qué podría significar para el swing o el pitcheo. Si no puedes saber cuál es mejor, vale decir “sin diferencia clara”. Al final resume qué cambió de A a B y qué parece haber mejorado o empeorado en general. No mires solo un lado.'
+    :'1. Cambio: describe en orden cómo cambian el timing y la postura a lo largo de los momentos {LST}.';
+  const look=sub(look0),cmp=sub(cmp0);
   const pts=bat
     ?'inicio del movimiento y transferencia de peso a la pierna de atrás, momento en que aterriza el pie delantero, posición de la carga (postura y manos), hombro delantero y apertura del cuerpo, posición de codos y manos, rotación de cadera, posición de la cabeza, extensión de los brazos cerca del contacto'
     :'timing de la pierna de apoyo y del paso, recogida y apertura del lado del guante, posición de codo y hombro, inclinación del tronco y apertura del cuerpo, punto de suelta, estabilidad de la cabeza, transferencia de peso';
@@ -768,19 +772,19 @@ fixPlayW();addEventListener('resize',fixPlayW);if(document.fonts&&document.fonts
 const SUPPORT_URL='https://buymeacoffee.com/formnote';
 if(SUPPORT_URL){$('#supportlink').href=SUPPORT_URL;document.querySelector('.g-sup').hidden=false}
 const TUTS={basic:[
- {t:'Elegir video',m:'Elige un video de swing o de lanzamiento de tu teléfono. El video solo se ve en tu teléfono y no se envía a ningún sitio.',sel:()=>'.pane .bar label',done:()=>panes[0].v.videoWidth>0,need:true,hint:'Elige un video para pasar al siguiente paso'},
+ {t:'Elegir video',m:'Elige un video de swing o de pitcheo de tu teléfono. El video solo se ve en tu teléfono y no se envía a ningún sitio.',sel:()=>'.pane .bar label',done:()=>panes[0].v.videoWidth>0,need:true,hint:'Elige un video para pasar al siguiente paso'},
  {t:'Detente en el momento que quieras revisar',m:'Avanza fotograma a fotograma con ◀ ▶ y detente en el momento que quieras revisar (por ejemplo, el instante del contacto). También puedes mover el control deslizante para ir más rápido.',sel:()=>['.g-play','.g-seek']},
  {t:'Pulsa “Preguntar a IA”',m:'Se crean las 4 imágenes alrededor del momento en que te detuviste y una pregunta para la IA. Pruébalo.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
  {t:'Tus 4 imágenes están listas',m:'La imagen de arriba es la que se envía a la IA. Muestra los momentos alrededor de donde te detuviste, y ● marca ese momento. Con “Intervalo” cambias la separación entre fotogramas.',sel:()=>'#burstiv'},
- {t:'Escribe edad, lado y problema',m:'Ejemplos: “10 años, diestro, llego tarde al swing” o “40 años, liga recreativa, diestro, me atrapan por dentro”. Puedes enviar sin escribir nada, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>'#aictx'},
+ {t:'Escribe edad, lado y problema',m:'Ejemplos: “10 años, diestro, hago contacto tarde” o “40 años, liga recreativa, diestro, me atrapan por dentro”. Puedes enviar sin escribir nada, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>'#aictx'},
  {t:'Enviar a una app de IA',m:'Este botón copia la pregunta y abre la pantalla de compartir. Elige tu app de IA, como ChatGPT o Claude, y envía la imagen y la pregunta. Si no aparece en la lista, mantén pulsada la imagen para guardarla y pega la pregunta.',sel:()=>'#aisend',last:true}
 ],cmp:[
- {t:'Elige dos videos para comparar',m:'Toca “Elegir video” y selecciona a la vez los dos videos que quieres comparar. El primero será A y el segundo B, y la pantalla cambia sola a dos paneles. Por ejemplo, tú y un modelo, o tú el mes pasado y hoy. Es más fácil comparar si ambos muestran el mismo movimiento (batear o lanzar) desde la misma dirección (de frente, de lado, etc.).',sel:()=>'#panes .pane:nth-of-type(1) .bar label',done:()=>compare&&panes.every(p=>p.v.videoWidth>0),need:true,hint:'Elige dos videos para pasar al siguiente paso'},
+ {t:'Elige dos videos para comparar',m:'Toca “Elegir video” y selecciona a la vez los dos videos que quieres comparar. El primero será A y el segundo B, y la pantalla cambia sola a dos paneles. Por ejemplo, tu mecánica y la de un jugador de referencia, o tú el mes pasado y hoy. Es más fácil comparar si ambos muestran el mismo movimiento (batear o lanzar) desde la misma dirección (de frente, de lado, etc.).',sel:()=>'#panes .pane:nth-of-type(1) .bar label',done:()=>compare&&panes.every(p=>p.v.videoWidth>0),need:true,hint:'Elige dos videos para pasar al siguiente paso'},
  {t:'Alinea A y B en el mismo momento',m:'Al principio, A y B se mueven por separado. Toca la pantalla de A para seleccionarla y usa ◀ ▶ de abajo o el control deslizante para llegar al momento que quieres (por ejemplo, el instante del contacto). Luego toca la pantalla de B para seleccionarla y alinea B en el mismo momento del movimiento.',sel:()=>['#panes','.g-play','.g-seek']},
  {t:'Define el punto de sincronía',m:'Cuando ambos muestren el mismo momento, pulsa “Sincronizar aquí”. Ese será el “punto alineado” y la sincronización se activa automáticamente.',sel:()=>'#anchor',done:()=>panes.every(p=>p.anchor!=null),act:()=>$('#anchor').click(),actlabel:'Definir punto'},
  {t:'Muévelos juntos',m:'Ahora el avance por fotogramas y el control deslizante mueven ambos videos a la vez. La diferencia se muestra como “Sinc. ±N fotogramas”. “Volver al punto” regresa al punto alineado.',sel:()=>['.g-play','.g-seek']},
  {t:'Detente en el momento y pulsa “Preguntar a IA”',m:'Detente en el momento sobre el que quieres preguntar y pulsa. Se crea una imagen con A y B lado a lado, con 4 momentos alrededor.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
- {t:'Elige la relación entre A y B y escribe tu problema',m:'Elige si A y B son “yo y un modelo” o “ambos yo (antes y después)”. A no siempre está a la izquierda ni B a la derecha, así que esto se refleja en la pregunta. Escribe también tu edad, el lado con el que bateas o lanzas y tu problema. Ejemplo: “10 años, derecho, llego tarde al swing”. Puedes enviar sin escribir, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>['#aipair','#aictx']},
+ {t:'Elige la relación entre A y B y escribe tu problema',m:'Elige si A y B son “yo y un jugador de referencia” o “ambos yo (antes y después)”. A no siempre está a la izquierda ni B a la derecha, así que esto se refleja en la pregunta. Escribe también tu edad, el lado con el que bateas o lanzas y tu problema. Ejemplo: “10 años, derecho, hago contacto tarde”. Puedes enviar sin escribir, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>['#aipair','#aictx']},
  {t:'Enviar a una app de IA',m:'Este botón copia la pregunta y abre la pantalla de compartir. Elige tu app de IA y envía la imagen y la pregunta.',sel:()=>'#aisend',last:true}
 ]};
 let TUT=TUTS.basic;
