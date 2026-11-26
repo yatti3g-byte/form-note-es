@@ -185,7 +185,7 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
   <p class="hint" id="snaphint">Mantén pulsada la imagen para guardarla.</p>
   <div class="row" style="justify-content:center"><button class="btn pri" id="snapshare" hidden>Compartir</button><button class="btn" id="snapclose">Cerrar</button></div>
   <div id="aipanel" hidden>
-    <div class="row" style="justify-content:center"><select id="aikind"><option>Bateo</option><option>Pitcheo</option></select><input id="aictx" type="text" maxlength="80" placeholder="Edad, mano con la que bateas/lanzas, qué mejorar"></div>
+    <div class="row" style="justify-content:center"><select id="aikind"><option value="bat">Bateo</option><option value="pitch">Pitcheo</option></select><input id="aictx" type="text" maxlength="80" placeholder="Edad, mano con la que bateas/lanzas, qué mejorar"></div>
     <select id="aipair" hidden><option value="">A y B: sin especificar</option><option value="self">Ambos videos son míos (otro día o estado)</option><option value="AM">A soy yo, B es el jugador de referencia</option><option value="MA">A es el jugador de referencia, B soy yo</option></select>
     <textarea id="aitext" rows="6" aria-label="Pregunta para la IA"></textarea>
     <button class="btn pri" id="aisend">Copiar pregunta y enviar a app de IA</button>
@@ -578,7 +578,7 @@ async function buildFour(clean){
 
 
 function aiPrompt(){
-  const kind=$('#aikind').value,ctx=$('#aictx').value.trim()||'(sin rellenar)',bat=/Bateo/.test(kind);
+  const kind=$('#aikind').selectedOptions[0].textContent,ctx=$('#aictx').value.trim()||'(sin rellenar)',bat=/Bateo/.test(kind);
   const rel={'':'No se ha indicado la relación entre A y B (cuál soy yo y cuál es el jugador de referencia). Compara los dos.','self':'A y B son videos míos grabados en distintos días o en diferentes condiciones. Compara qué ha mejorado, qué sigue igual y qué ha empeorado.','AM':'A es mi técnica y B es un jugador de referencia con el que quiero compararme.','MA':'A es un jugador de referencia y B es mi técnica.'}[$('#aipair').value]||'';
   const it=view[5]||view[4],n=it&&it.items&&it.items.length>1?it.items.length:4,sq=Array.from({length:n},(_,i)=>i+1);
   const sub=t=>t.replace(/\{N\}/g,n).replace(/\{SEQ\}/g,sq.join('→')).replace(/\{LST\}/g,sq.join(', '));
@@ -598,10 +598,10 @@ function aiPrompt(){
 let aiEdited=false;
 function aiFill(){
   $('#aipair').hidden=!aiPair;
-  try{const k=localStorage.getItem('fn_aikind'),c=localStorage.getItem('fn_aictx'),q=localStorage.getItem('fn_aipair');if(q!=null)$('#aipair').value=q;if(k)$('#aikind').value=k;if(c!=null&&!$('#aictx').value)$('#aictx').value=c}catch(e){}
+  try{const k=localStorage.getItem(LSP+'aikind'),c=localStorage.getItem(LSP+'aictx'),q=localStorage.getItem(LSP+'aipair');if(q!=null){$('#aipair').value=q;if($('#aipair').selectedIndex<0)$('#aipair').selectedIndex=0}if(k==='bat'||k==='pitch')$('#aikind').value=k;if(c!=null&&!$('#aictx').value)$('#aictx').value=c}catch(e){}
   aiEdited=false;$('#aitext').value=aiPrompt();
 }
-function aiRefresh(){try{localStorage.setItem('fn_aikind',$('#aikind').value);localStorage.setItem('fn_aictx',$('#aictx').value);localStorage.setItem('fn_aipair',$('#aipair').value)}catch(e){}if(!aiEdited)$('#aitext').value=aiPrompt()}
+function aiRefresh(){try{localStorage.setItem(LSP+'aikind',$('#aikind').value);localStorage.setItem(LSP+'aictx',$('#aictx').value);localStorage.setItem(LSP+'aipair',$('#aipair').value)}catch(e){}if(!aiEdited)$('#aitext').value=aiPrompt()}
 $('#aikind').onchange=$('#aipair').onchange=$('#aictx').oninput=aiRefresh;
 $('#aitext').oninput=()=>{aiEdited=true};
 async function copyText(t){
@@ -777,6 +777,7 @@ fixPlayW();addEventListener('resize',fixPlayW);if(document.fonts&&document.fonts
 
 
 
+const LSP=document.documentElement.lang==='ja'?'fn_':'fn_'+document.documentElement.lang+'_';
 const SUPPORT_URL='https://buymeacoffee.com/formnote';
 if(SUPPORT_URL){$('#supportlink').href=SUPPORT_URL;document.querySelector('.g-sup').hidden=false}
 const TUTS={basic:[
@@ -805,7 +806,7 @@ function tutRect(sel){
   const l=Math.min(...R.map(r=>r.left)),t=Math.min(...R.map(r=>r.top)),rt=Math.max(...R.map(r=>r.right)),b=Math.max(...R.map(r=>r.bottom));
   return{left:l,top:t,width:rt-l,height:b-t};
 }
-const tutLS=v=>{try{localStorage.setItem('fn_tut','1')}catch(e){}};
+const tutLS=v=>{try{localStorage.setItem(LSP+'tut','1')}catch(e){}};
 function tutPlace(){
   if(tutI<0)return;const st=TUT[tutI];const mk=$('#tutmask'),cd=$('#tutcard');
   const q=tutRect(st.sel());
@@ -850,7 +851,7 @@ $('#tutbtn2').onclick=()=>tutStart('cmp');
 $('#tutgo').onclick=()=>tutStart('cmp');
 $('#tutno').onclick=()=>{tutLS();$('#tutbn').hidden=true};
 addEventListener('resize',tutPlace);
-try{if(!localStorage.getItem('fn_tut'))$('#tutbn').hidden=false}catch(e){$('#tutbn').hidden=false}
+try{if(!localStorage.getItem(LSP+'tut'))$('#tutbn').hidden=false}catch(e){$('#tutbn').hidden=false}
 </script>
 </body>
 </html>
