@@ -2,6 +2,8 @@
 <html lang="es-419">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FormNote</title>
 <meta name="description" content="Una herramienta gratuita para revisar la técnica de béisbol en video: fotograma a fotograma, medición de ángulos y comparación de dos videos. Los videos se quedan en tu dispositivo.">
@@ -117,8 +119,10 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
 #tutbn[hidden],#tutmask[hidden],#tutcard[hidden]{display:none!important}
 #tutbn button.go{background:#fff;color:#2f7d4f;font-weight:700}
 .brand{display:flex;gap:6px;align-items:baseline;font-size:12px;line-height:1.2;color:var(--mute);padding:0 2px}.brand b{color:var(--ink);font-size:13px}
+.ver{margin:4px 2px 12px;font-size:12px;color:var(--mute)}
+.family{margin:14px 2px 6px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--mute)}.family h2{margin:0 0 4px;font-size:14px;color:var(--ink)}.family p{margin:0 0 6px;line-height:1.6}.family ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}.family li{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;padding:4px 0}.family li a,.family li b{color:var(--ink);min-width:6.5em}.family li a{color:var(--acc);font-weight:700}
 .g-sup{text-align:center}.g-sup[hidden]{display:none}.g-sup .lnk{display:inline-block;min-height:44px}
-@media (orientation:landscape) and (max-height:560px){.g-sup,.brand{display:none}}
+@media (orientation:landscape) and (max-height:560px){.g-sup,.brand,.family,.ver{display:none}}
 </style>
 </head>
 <body>
@@ -151,7 +155,7 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
     <span class="anc" hidden><button class="btn" id="anchor" disabled>Sincronizar aquí</button><button class="btn" id="goanchor" disabled>Volver al punto</button></span>
   </div>
   <div class="g-act">
-    <button class="btn pri" id="aimain">Preguntar a IA</button>
+    <button class="btn pri" id="aimain">Preguntar a la IA</button>
     <button class="btn" id="snap">Compartir</button>
     <a class="lnk" href="help.html" target="_blank" rel="noopener">Ayuda</a>
   </div>
@@ -171,6 +175,7 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
     </div>
   </details>
   <div class="g-sup" hidden><a class="lnk" id="supportlink" href="#" target="_blank" rel="noopener">☕ Apoya a DugoutTools</a></div>
+  <p class="ver" id="ver">FormNote 0.1 (prototipo)</p>
 </div>
 
 <div id="tutmask" hidden></div><div id="tutcard" hidden role="dialog" aria-live="polite"></div>
@@ -777,7 +782,7 @@ if(SUPPORT_URL){$('#supportlink').href=SUPPORT_URL;document.querySelector('.g-su
 const TUTS={basic:[
  {t:'Elegir video',m:'Elige un video de swing o de pitcheo de tu teléfono. El video solo se ve en tu teléfono y no se envía a ningún sitio.',sel:()=>'.pane .bar label',done:()=>panes[0].v.videoWidth>0,need:true,hint:'Elige un video para pasar al siguiente paso'},
  {t:'Detente en el momento que quieras revisar',m:'Avanza fotograma a fotograma con ◀ ▶ y detente en el momento que quieras revisar (por ejemplo, el instante del contacto). También puedes mover el control deslizante para ir más rápido.',sel:()=>['.g-play','.g-seek']},
- {t:'Pulsa “Preguntar a IA”',m:'Se crean las 4 imágenes alrededor del momento en que te detuviste y una pregunta para la IA. Pruébalo.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
+ {t:'Pulsa “Preguntar a la IA”',m:'Se crean las 4 imágenes alrededor del momento en que te detuviste y una pregunta para la IA. Pruébalo.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
  {t:'Tus 4 imágenes están listas',m:'La imagen de arriba es la que se envía a la IA. Muestra los momentos alrededor de donde te detuviste, y ● marca ese momento. Con “Intervalo” cambias la separación entre fotogramas.',sel:()=>'#burstiv'},
  {t:'Escribe edad, lado y problema',m:'Ejemplos: “10 años, diestro, hago contacto tarde” o “40 años, liga recreativa, diestro, me atrapan por dentro”. Puedes enviar sin escribir nada, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>'#aictx'},
  {t:'Enviar a una app de IA',m:'Este botón copia la pregunta y abre la pantalla de compartir. Elige tu app de IA, como ChatGPT o Claude, y envía la imagen y la pregunta. Si no aparece en la lista, mantén pulsada la imagen para guardarla y pega la pregunta.',sel:()=>'#aisend',last:true}
@@ -786,7 +791,7 @@ const TUTS={basic:[
  {t:'Alinea A y B en el mismo momento',m:'Al principio, A y B se mueven por separado. Toca la pantalla de A para seleccionarla y usa ◀ ▶ de abajo o el control deslizante para llegar al momento que quieres (por ejemplo, el instante del contacto). Luego toca la pantalla de B para seleccionarla y alinea B en el mismo momento del movimiento.',sel:()=>['#panes','.g-play','.g-seek']},
  {t:'Define el punto de sincronía',m:'Cuando ambos muestren el mismo momento, pulsa “Sincronizar aquí”. Ese será el “punto alineado” y la sincronización se activa automáticamente.',sel:()=>'#anchor',done:()=>panes.every(p=>p.anchor!=null),act:()=>$('#anchor').click(),actlabel:'Definir punto'},
  {t:'Muévelos juntos',m:'Ahora el avance por fotogramas y el control deslizante mueven ambos videos a la vez. La diferencia se muestra como “Sinc. ±N fotogramas”. “Volver al punto” regresa al punto alineado.',sel:()=>['.g-play','.g-seek']},
- {t:'Detente en el momento y pulsa “Preguntar a IA”',m:'Detente en el momento sobre el que quieres preguntar y pulsa. Se crea una imagen con A y B lado a lado, con 4 momentos alrededor.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
+ {t:'Detente en el momento y pulsa “Preguntar a la IA”',m:'Detente en el momento sobre el que quieres preguntar y pulsa. Se crea una imagen con A y B lado a lado, con 4 momentos alrededor.',sel:()=>'#aimain',done:()=>!$('#snapbox').hidden&&!$('#aipanel').hidden,act:()=>$('#aimain').click(),actlabel:'Probar'},
  {t:'Elige la relación entre A y B y escribe tu problema',m:'Elige si A y B son “yo y un jugador de referencia” o “ambos yo (antes y después)”. A no siempre está a la izquierda ni B a la derecha, así que esto se refleja en la pregunta. Escribe también tu edad, el lado con el que bateas o lanzas y tu problema. Ejemplo: “10 años, derecho, hago contacto tarde”. Puedes enviar sin escribir, pero la respuesta de la IA será más concreta si lo haces.',sel:()=>['#aipair','#aictx']},
  {t:'Enviar a una app de IA',m:'Este botón copia la pregunta y abre la pantalla de compartir. Elige tu app de IA y envía la imagen y la pregunta.',sel:()=>'#aisend',last:true}
 ]};
