@@ -122,10 +122,15 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
 .ver{margin:4px 2px 12px;font-size:12px;color:var(--mute)}
 .family{margin:14px 2px 6px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--mute)}.family h2{margin:0 0 4px;font-size:14px;color:var(--ink)}.family p{margin:0 0 6px;line-height:1.6}.family ul{list-style:none;margin:0;padding:0;display:grid;gap:2px}.family li{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;padding:4px 0}.family li a,.family li b{color:var(--ink);min-width:6.5em}.family li a{color:var(--acc);font-weight:700}
 .g-sup{text-align:center}.g-sup[hidden]{display:none}.g-sup .lnk{display:inline-block;min-height:44px}
+html,body{height:auto;min-height:100%}
+body{display:block;padding:6px}
+#app{display:flex;flex-direction:column;gap:6px;height:calc(100vh - 12px);height:calc(100dvh - 12px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+#foot{max-width:640px;margin:0 auto;padding-bottom:10px}
 @media (orientation:landscape) and (max-height:560px){.g-sup,.brand,.family,.ver{display:none}}
 </style>
 </head>
 <body>
+<div id="app">
 <div class="brand"><b>FormNote</b><span>· DugoutTools</span></div>
 <div id="tutbn" hidden><span><span class="nb">¿Primera vez? </span><span class="nb">Te guiamos para comparar dos videos y consultar </span><span class="nb">a la IA.</span></span><button class="go" id="tutgo">Ver guía</button><button id="tutno" aria-label="Cerrar">×</button></div>
 <div class="panes" id="panes"></div>
@@ -174,6 +179,9 @@ details.draw:not([open]) .g-tools,details.draw:not([open]) .g-edit{display:none}
       <span class="hintline" id="toolhint">Arrastra para trazar una línea</span>
     </div>
   </details>
+</div>
+</div>
+<div id="foot">
   <div class="g-sup" hidden><a class="lnk" id="supportlink" href="#" target="_blank" rel="noopener">☕ Apoya a DugoutTools</a></div>
   <p class="ver" id="ver">FormNote 0.1 (prototipo)</p>
 </div>
